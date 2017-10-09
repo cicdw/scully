@@ -56,7 +56,9 @@ class Scully(object):
 
     def __init__(self):
         self.slack_client = SlackClient(os.environ.get('SCULLY_TOKEN'))
-        self.actions = [AtMentions(self.slack_client), Aliens(self.slack_client)]
+        self.responses = []
+        for resp in Response.__subclasses__():
+            self.responses.append(resp(self.slack_client))
 
     def connect(self):
         self.slack_client.rtm_connect()
@@ -64,8 +66,8 @@ class Scully(object):
     def listen(self):
         sleep(.25)
         incoming = self.slack_client.rtm_read()
-        for action in self.actions:
-            action(incoming)
+        for resp in self.responses:
+            resp(incoming)
 
     def start(self):
         self.connect()
