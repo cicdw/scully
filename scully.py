@@ -40,6 +40,10 @@ class Aliens(Action):
                                            channel=stream[0]['channel'],
                                            name='alien',
                                            timestamp=stream[0]['ts'], as_user=True)
+                self.slack_client.api_call("reactions.add",
+                                           channel=stream[0]['channel'],
+                                           name='telescope',
+                                           timestamp=stream[0]['ts'], as_user=True)
 
 
 class Scully(object):
