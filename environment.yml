@@ -1,0 +1,6 @@
+name: scully
+
+dependencies:
+    - python=3.5
+    - slackclient
+    - ipython
