@@ -3,47 +3,53 @@ from slackclient import SlackClient
 from time import sleep
 
 
-class Action(object):
+class Response(object):
 
     def setup(self):
         pass
+
+    def reply(self, msg):
+        raise NotImplementedError
 
     def __init__(self, slack_client):
         self.setup()
         self.slack_client = slack_client
 
+    def _reply(self, stream):
+        if stream:
+            for msg in stream:
+                self.reply(msg)
+
     def __call__(self, stream):
-        self.reply(stream)
+        self._reply(stream)
 
 
-class AtMentions(Action):
+class AtMentions(Response):
 
     def setup(self):
         self.AT = '<@U7G9A6Y7R>'
 
-    def reply(self, stream):
-        if stream:
-            msg = stream[0].get('text', '')
-            if self.AT in msg:
-                self.slack_client.api_call("chat.postMessage",
-                                           channel=stream[0]['channel'],
-                                           text='I WANT TO BELIEVE', as_user=True)
+    def reply(self, msg):
+        text = msg.get('text', '')
+        if self.AT in text:
+            self.slack_client.api_call("chat.postMessage",
+                                        channel=msg['channel'],
+                                        text='I WANT TO BELIEVE', as_user=True)
 
 
-class Aliens(Action):
+class Aliens(Response):
 
-    def reply(self, stream):
-        if stream:
-            msg = stream[0].get('text', '')
-            if 'alien' in msg.lower():
-                self.slack_client.api_call("reactions.add",
-                                           channel=stream[0]['channel'],
-                                           name='alien',
-                                           timestamp=stream[0]['ts'], as_user=True)
-                self.slack_client.api_call("reactions.add",
-                                           channel=stream[0]['channel'],
-                                           name='telescope',
-                                           timestamp=stream[0]['ts'], as_user=True)
+    def reply(self, msg):
+        text = msg.get('text', '')
+        if 'alien' in text.lower():
+            self.slack_client.api_call("reactions.add",
+                                        channel=msg['channel'],
+                                        name='alien',
+                                        timestamp=msg['ts'], as_user=True)
+            self.slack_client.api_call("reactions.add",
+                                        channel=msg['channel'],
+                                        name='telescope',
+                                        timestamp=msg['ts'], as_user=True)
 
 
 class Scully(object):
