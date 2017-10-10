@@ -54,8 +54,8 @@ class Aliens(Response):
 
 class Scully(object):
 
-    def __init__(self):
-        self.slack_client = SlackClient(os.environ.get('SCULLY_TOKEN'))
+    def __init__(self, client=SlackClient):
+        self.slack_client = client(os.environ.get('SCULLY_TOKEN'))
         self.responses = []
         for resp in Response.__subclasses__():
             self.responses.append(resp(self.slack_client))
