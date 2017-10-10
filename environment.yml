@@ -1,6 +1,7 @@
 name: scully
 
 dependencies:
+    - ipython
+    - pytest
     - python=3.5
     - slackclient
-    - ipython
