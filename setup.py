@@ -12,4 +12,7 @@ setup(name='scully-bot',
       maintainer_email='white.cdw@gmail.com',
       packages=['scully'],
       install_requires=list(open('requirements.txt').read().strip().split('\n')),
+      entry_points = {
+        'console_scripts': ['scully=scully.scully:run'],
+      },
       zip_safe=False)
