@@ -5,14 +5,10 @@ from time import sleep
 
 class Response(object):
 
-    def setup(self):
-        pass
-
     def reply(self, msg):
         raise NotImplementedError
 
     def __init__(self, slack_client):
-        self.setup()
         self.slack_client = slack_client
 
     def _reply(self, stream):
@@ -26,8 +22,7 @@ class Response(object):
 
 class AtMentions(Response):
 
-    def setup(self):
-        self.AT = '<@U7G9A6Y7R>'
+    AT = '<@U7G9A6Y7R>'
 
     def reply(self, msg):
         text = msg.get('text', '')
@@ -54,6 +49,8 @@ class Aliens(Response):
 
 class Scully(object):
 
+    RATE_LIMIT = 0.25
+
     def __init__(self, client=SlackClient):
         self.slack_client = client(os.environ.get('SCULLY_TOKEN'))
         self.responses = []
@@ -64,15 +61,17 @@ class Scully(object):
         self.slack_client.rtm_connect()
 
     def listen(self):
-        sleep(.25)
         incoming = self.slack_client.rtm_read()
         for resp in self.responses:
             resp(incoming)
 
-    def start(self):
+    def start(self, stop_after=None):
         self.connect()
-        while True:
+        end_iter = 0 if stop_after is None else stop_after
+        while not end_iter:
+            sleep(self.RATE_LIMIT)
             self.listen()
+            end_iter = max(end_iter - 1, 0)
 
 
 if __name__ == '__main__':
