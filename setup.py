@@ -13,6 +13,6 @@ setup(name='scully-bot',
       packages=['scully'],
       install_requires=list(open('requirements.txt').read().strip().split('\n')),
       entry_points = {
-        'console_scripts': ['scully=scully.scully:main'],
+        'console_scripts': ['scully=scully.scully:run'],
       },
       zip_safe=False)

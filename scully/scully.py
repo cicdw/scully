@@ -32,6 +32,6 @@ class Scully(object):
             end_iter = max(end_iter - 1, 0)
 
 
-def main():
+def run():
     bot = Scully()
     bot.start()
