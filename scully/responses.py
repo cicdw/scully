@@ -53,7 +53,7 @@ class AddReaction(Response):
         reactions = [emoji for t, emoji in self._cache.items() if t.lower() in text.lower()]
         if self.call_signature.search(text):
             new_string, new_emoji = self.add_reaction(text)
-            success_msg = self.say('Reaction added for {}'.format(new_string), **msg)
+            success_msg = self.say('Reaction added for {}.'.format(new_string), **msg)
             self.react(new_emoji, **success_msg)
 
         if reactions:
