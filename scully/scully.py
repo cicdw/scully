@@ -1,9 +1,13 @@
+import logging
 import os
 from slackclient import SlackClient
+import sys
 from time import sleep
 
 from .responses import Response
 
+
+LOG_FILE = os.path.expanduser('~/scully_logs.txt')
 
 class Scully(object):
 
@@ -25,6 +29,7 @@ class Scully(object):
 
     def start(self, stop_after=None):
         self.connect()
+        logging.info('Scully is connected.')
         end_iter = 0 if stop_after is None else stop_after
         while not end_iter:
             sleep(self.RATE_LIMIT)
@@ -33,5 +38,15 @@ class Scully(object):
 
 
 def run():
+    verbose = sys.argv[-1]
+    fname = LOG_FILE if verbose == '-v' else None
+    logging.basicConfig(filename=fname,
+                        format='%(asctime)s %(message)s',
+                        datefmt='%m/%d/%Y %I:%M:%S %p',
+                        level=logging.DEBUG)
     bot = Scully()
-    bot.start()
+    logging.info('Scully initialized.')
+    try:
+        bot.start()
+    except Exception:
+        logging.exception("Scully has been killed!")
