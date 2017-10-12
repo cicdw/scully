@@ -40,58 +40,53 @@ def test_fixture_is_present(slack):
     assert slack.api_called_with('chat.postMessage', text='I WANT TO BELIEVE', channel='foo')
 
 
-def test_at_mentions_believes():
-    sc = MagicMock()
-    atmentions = AtMentions(sc)
+def test_at_mentions_believes(slack):
+    atmentions = AtMentions(slack)
     msg = {'text': '<@U7G9A6Y7R>', 'channel': 'foo'}
     atmentions([msg])
-    assert sc.api_called_with(('chat.postMessage',), text='I WANT TO BELIEVE', channel='foo')
+    assert slack.api_called_with('chat.postMessage', text='I WANT TO BELIEVE', channel='foo')
 
 
-def test_at_mentions_doesnt_believe():
-    sc = MagicMock()
-    atmentions = AtMentions(sc)
+def test_at_mentions_doesnt_believe(slack):
+    atmentions = AtMentions(slack)
     msg = {'text': 'none', 'channel': 'foo'}
     atmentions([msg])
-    sc.api_call.assert_not_called()
+    slack.api_call.assert_not_called()
 
 
-def test_add_reactions_confirms():
-    sc = MagicMock()
-    add_new = AddReaction(sc)
+def test_add_reactions_confirms(slack):
+    add_new = AddReaction(slack)
     msg = {'text': 'scully plz react to "foo" with :bar:', 'channel': 'cat'}
     add_new([msg])
-    assert sc.api_called_with(('chat.postMessage',),
+    assert slack.api_called_with('chat.postMessage',
                               channel='cat',
-                              text='Reaction added for "foo".')
-    assert sc.api_called_with(('reaction.add',), name='bar')
+                              text='--reaction added for "foo"--')
+    assert slack.api_called_with('reactions.add', name='bar')
 
 
-def test_add_reactions_reacts():
-    sc = MagicMock()
-    add_new = AddReaction(sc)
+def test_add_reactions_reacts(slack):
+    add_new = AddReaction(slack)
     msg = {'text': 'scully, react to "foo" with :bar:', 'channel': 'cat'}
     add_new([msg])
     new_msg = {'text': 'Foo is ridiculous', 'channel': 'cat'}
     add_new([new_msg])
-    args, kwargs = sc.api_call.call_args_list[-1]
-    assert args == ('reactions.add',)
-    assert kwargs['name'] == 'bar'
+    assert slack.api_called_with('reactions.add', name='bar')
 
 
-def test_add_reactions_is_case_insensitive():
-    sc = MagicMock()
-    add_new = AddReaction(sc)
+def test_add_reactions_handles_curly_quotes(slack):
+    add_new = AddReaction(slack)
+    msg = {'text': 'scully react to “encoding” with :-1:'}
+    add_new([msg])
+    assert slack.api_called_with('chat.postMessage', text='--reaction added for "encoding"--')
+    assert slack.api_called_with('reactions.add', name='-1')
+
+
+def test_add_reactions_is_case_insensitive(slack):
+    add_new = AddReaction(slack)
     msg = {'text': 'Hey Scully will you react to "FoO" with :bar:', 'channel': 'cat'}
     add_new([msg])
-    args, kwargs = sc.api_call.call_args_list[0]
-    assert args == ('chat.postMessage',)
-    assert 'added' in kwargs['text'].lower()
-    assert kwargs['channel'] == 'cat'
-    args, kwargs = sc.api_call.call_args_list[1]
-    assert args == ('reactions.add',)
-    assert kwargs['name'] == 'bar'
+    assert slack.api_called_with('chat.postMessage', text='--reaction added for "FoO"--',
+                              channel='cat')
+    assert slack.api_called_with('reactions.add', name='bar')
     add_new([{'text': 'foo me bro'}])
-    args, kwargs = sc.api_call.call_args_list[2]
-    assert args == ('reactions.add',)
-    assert kwargs['name'] == 'bar'
+    assert slack.api_called_with('reactions.add', name='bar')

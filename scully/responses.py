@@ -20,6 +20,9 @@ class Response(object):
                                     timestamp=ts, as_user=True)
         return posted_msg
 
+    def clean(self, txt):
+        return txt.replace('“', '"').replace('”', '"')
+
     def __init__(self, slack_client):
         self.slack_client = slack_client
 
@@ -49,11 +52,11 @@ class AddReaction(Response):
         return listen_for, react_with
 
     def reply(self, msg):
-        text = msg.get('text', '')
+        text = self.clean(msg.get('text', ''))
         reactions = [emoji for t, emoji in self._cache.items() if t.lower() in text.lower()]
         if self.call_signature.search(text):
             new_string, new_emoji = self.add_reaction(text)
-            success_msg = self.say('Reaction added for "{}".'.format(new_string), **msg)
+            success_msg = self.say('--reaction added for "{}"--'.format(new_string), **msg)
             self.react(new_emoji, **success_msg)
 
         if reactions:
