@@ -41,7 +41,7 @@ def run():
     verbose = sys.argv[-1]
     fname = LOG_FILE if verbose == '-v' else None
     logging.basicConfig(filename=fname,
-                        format='%(asctime)s %(message)s',
+                        format='%(levelname)s::%(asctime)s %(message)s',
                         datefmt='%m/%d/%Y %I:%M:%S %p',
                         level=logging.DEBUG)
     bot = Scully()
