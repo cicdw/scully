@@ -14,10 +14,11 @@ class Response(object):
         return posted_msg
 
     def react(self, emoji, channel=None, ts=None, **kwargs):
-        self.slack_client.api_call("reactions.add",
+        posted_msg = self.slack_client.api_call("reactions.add",
                                     channel=channel,
                                     name=emoji,
                                     timestamp=ts, as_user=True)
+        return posted_msg
 
     def __init__(self, slack_client):
         self.slack_client = slack_client
@@ -33,10 +34,13 @@ class Response(object):
 
 class AddReaction(Response):
 
-    _cache = {}
-    call_signature = re.compile('scully.*react\sto ".*" with :.*:')
+    call_signature = re.compile('scully.*react to ".*" with :.*:', re.IGNORECASE)
     match_string = re.compile('".*"')
     emoji_string = re.compile(':.*:')
+
+    def __init__(self, slack_client):
+        super().__init__(slack_client)
+        self._cache = {}
 
     def add_reaction(self, text):
         listen_for = self.match_string.search(text).group().replace('"', '')
@@ -47,7 +51,7 @@ class AddReaction(Response):
     def reply(self, msg):
         text = msg.get('text', '')
         reactions = [emoji for t, emoji in self._cache.items() if t.lower() in text.lower()]
-        if self.call_signature.match(text):
+        if self.call_signature.search(text):
             new_string, new_emoji = self.add_reaction(text)
             success_msg = self.say('Reaction added for {}'.format(new_string), **msg)
             self.react(new_emoji, **success_msg)

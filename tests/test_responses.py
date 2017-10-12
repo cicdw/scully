@@ -46,3 +46,21 @@ def test_add_reactions_confirms():
     args, kwargs = sc.api_call.call_args_list[1]
     assert args == ('reactions.add',)
     assert kwargs['name'] == 'bar'
+
+
+def test_add_reactions_is_case_insensitive():
+    sc = MagicMock()
+    add_new = AddReaction(sc)
+    msg = {'text': 'Hey Scully will you react to "FoO" with :bar:', 'channel': 'cat'}
+    add_new([msg])
+    args, kwargs = sc.api_call.call_args_list[0]
+    assert args == ('chat.postMessage',)
+    assert 'added' in kwargs['text'].lower()
+    assert kwargs['channel'] == 'cat'
+    args, kwargs = sc.api_call.call_args_list[1]
+    assert args == ('reactions.add',)
+    assert kwargs['name'] == 'bar'
+    add_new([{'text': 'foo me bro'}])
+    args, kwargs = sc.api_call.call_args_list[2]
+    assert args == ('reactions.add',)
+    assert kwargs['name'] == 'bar'
