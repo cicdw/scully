@@ -46,4 +46,3 @@ def test_add_reactions_confirms():
     args, kwargs = sc.api_call.call_args_list[1]
     assert args == ('reactions.add',)
     assert kwargs['name'] == 'bar'
-

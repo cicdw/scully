@@ -13,8 +13,11 @@ class Response(object):
                                     as_user=True)
         return posted_msg
 
-    def react(self, msg, emoji):
-        pass
+    def react(self, emoji, channel=None, ts=None, **kwargs):
+        self.slack_client.api_call("reactions.add",
+                                    channel=channel,
+                                    name=emoji,
+                                    timestamp=ts, as_user=True)
 
     def __init__(self, slack_client):
         self.slack_client = slack_client
@@ -46,23 +49,12 @@ class AddReaction(Response):
         reactions = [emoji for t, emoji in self._cache.items() if t.lower() in text.lower()]
         if self.call_signature.match(text):
             new_string, new_emoji = self.add_reaction(text)
-            success_msg = self.slack_client.api_call("chat.postMessage",
-                                        channel=msg['channel'],
-                                        text='Reaction added for "{}".'.format(new_string),
-                                        as_user=True)
-            self.slack_client.api_call("reactions.add",
-                                        channel=msg['channel'],
-                                        name=new_emoji,
-                                        timestamp=success_msg['ts'],
-                                        as_user=True)
+            success_msg = self.say('Reaction added for {}'.format(new_string), **msg)
+            self.react(new_emoji, **success_msg)
 
         if reactions:
             for emoji in reactions:
-                self.slack_client.api_call("reactions.add",
-                                            channel=msg['channel'],
-                                            name=emoji,
-                                            timestamp=msg['ts'],
-                                            as_user=True)
+                self.react(emoji, **msg)
 
 
 class AtMentions(Response):
@@ -80,11 +72,5 @@ class Aliens(Response):
     def reply(self, msg):
         text = msg.get('text', '')
         if 'alien' in text.lower():
-            self.slack_client.api_call("reactions.add",
-                                        channel=msg['channel'],
-                                        name='alien',
-                                        timestamp=msg['ts'], as_user=True)
-            self.slack_client.api_call("reactions.add",
-                                        channel=msg['channel'],
-                                        name='telescope',
-                                        timestamp=msg['ts'], as_user=True)
+            self.react('alien', **msg)
+            self.react('telescope', **msg)
