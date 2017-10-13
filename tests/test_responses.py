@@ -20,6 +20,9 @@ def slack():
                     return True
             return False
 
+        def api_not_called(self):
+            return not self.api_call.called
+
     return Slack()
 
 
@@ -78,6 +81,13 @@ def test_add_reactions_ignores_empty_strings(slack):
     msg = {'text': 'scully react to "" with :emoji:'}
     add_new([msg])
     add_new([{'text': 'new msg'}])
+    slack.api_call.assert_not_called()
+
+
+def test_add_reactions_ignores_things_in_brackets(slack):
+    add_new = AddReaction(slack)
+    msg = {'text': '''10/13/2017 12:56:19 AM INFO: {text': 'scully please react to "tennis" with :money_mouth_face:'}'''}
+    add_new([msg])
     slack.api_call.assert_not_called()
 
 
