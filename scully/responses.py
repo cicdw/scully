@@ -79,6 +79,7 @@ class GetTickerPrice(Response):
 class AddReaction(Response):
 
     call_signature = re.compile('scully.*react to ".+" with :.*:', re.IGNORECASE)
+    ignore_pattern = re.compile('"\s+"')
     match_string = re.compile('".+"')
     emoji_string = re.compile(':.*:')
 
@@ -114,7 +115,7 @@ class AddReaction(Response):
     def reply(self, msg):
         text = self.sanitize(msg.get('text', ''))
         reactions = [emoji for t, emoji in self._cache.items() if t.lower() in text.lower()]
-        if self.call_signature.search(text):
+        if self.call_signature.search(text) and not self.ignore_pattern.search(text):
             new_string, new_emoji = self.add_reaction(text)
             success_msg = self.say('--reaction added for "{}"--'.format(new_string), **msg)
             self.react(new_emoji, **success_msg)
