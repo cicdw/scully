@@ -1,2 +1,3 @@
 slackclient
 pytest
+yahoo-finance
