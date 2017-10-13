@@ -18,6 +18,7 @@ class Scully(object):
         self.responses = []
         for resp in Response.__subclasses__():
             self.responses.append(resp(self.slack_client))
+            logging.info('Registered {}'.format(resp.__name__))
 
     def connect(self):
         self.slack_client.rtm_connect()
@@ -41,9 +42,10 @@ def run():
     verbose = sys.argv[-1]
     fname = LOG_FILE if verbose == '-v' else None
     logging.basicConfig(filename=fname,
-                        format='%(levelname)s::%(asctime)s %(message)s',
+                        format='%(asctime)s %(levelname)s: %(message)s',
                         datefmt='%m/%d/%Y %I:%M:%S %p',
                         level=logging.DEBUG)
+    logging.info('Starting Scully bot!')
     bot = Scully()
     logging.info('Scully initialized.')
     try:

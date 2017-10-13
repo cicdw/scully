@@ -1,3 +1,4 @@
+import logging
 import re
 
 
@@ -7,6 +8,7 @@ class Response(object):
         raise NotImplementedError
 
     def say(self, words, channel=None, **kwargs):
+        logging.info('Saying {0} in {1}'.format(words, channel))
         posted_msg = self.slack_client.api_call("chat.postMessage",
                                     channel=channel,
                                     text=words,
@@ -14,6 +16,7 @@ class Response(object):
         return posted_msg
 
     def react(self, emoji, channel=None, ts=None, **kwargs):
+        logging.info('Reacting w/ {0} in {1}'.format(emoji, channel))
         posted_msg = self.slack_client.api_call("reactions.add",
                                     channel=channel,
                                     name=emoji,
@@ -29,6 +32,7 @@ class Response(object):
     def _reply(self, stream):
         if stream:
             for msg in stream:
+                logging.info('Received {}'.format(msg))
                 self.reply(msg)
 
     def __call__(self, stream):
