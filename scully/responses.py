@@ -1,5 +1,10 @@
+import json
 import logging
+import os
 import re
+
+
+CACHE_FILE = os.path.expanduser('~/emoji_cache.txt')
 
 
 class Response(object):
@@ -49,15 +54,31 @@ class AddReaction(Response):
     match_string = re.compile('".+"')
     emoji_string = re.compile(':.*:')
 
-    def __init__(self, slack_client):
+    def __init__(self, slack_client, fname=CACHE_FILE):
         super().__init__(slack_client)
-        self._cache = {}
+        if os.path.exists(fname):
+            self._cache = self.load(fname=fname)
+        else:
+            self._cache = {}
+
+        self.fname = fname
+
+    def load(self, fname=CACHE_FILE):
+        with open(CACHE_FILE, 'r') as f:
+            out = json.load(f)
+        return out
+
+    def save(self):
+        if self.fname is not None:
+            with open(self.fname, 'w') as f:
+                json.dump(self._cache, f)
 
     def add_reaction(self, text):
         listen_for = self.match_string.search(text).group().replace('"', '').strip()
         react_with = self.emoji_string.search(text).group().replace(':', '')
         logging.info('Storing reaction :{0}: for pattern "{1}"'.format(react_with, listen_for))
         self._cache[listen_for] = react_with
+        self.save()
         return listen_for, react_with
 
     def reply(self, msg):

@@ -7,7 +7,8 @@ from time import sleep
 from .responses import Response
 
 
-LOG_FILE = os.path.expanduser('~/scully_logs.txt')
+LOG_FILE = os.path.expanduser('~/scully.log')
+
 
 class Scully(object):
 
