@@ -4,11 +4,15 @@ import re
 
 class Response(object):
 
+    @property
+    def __name__(self):
+        return type(self).__name__
+
     def reply(self, msg):
         raise NotImplementedError
 
     def say(self, words, channel=None, **kwargs):
-        logging.info('Saying {0} in {1}'.format(words, channel))
+        logging.info('{0} saying "{1}" in channel {2}'.format(self.__name__, words, channel))
         posted_msg = self.slack_client.api_call("chat.postMessage",
                                     channel=channel,
                                     text=words,
@@ -16,7 +20,7 @@ class Response(object):
         return posted_msg
 
     def react(self, emoji, channel=None, ts=None, **kwargs):
-        logging.info('Reacting w/ {0} in {1}'.format(emoji, channel))
+        logging.info('{0} reacting with :{1}: in channel {2}'.format(self.__name__, emoji, channel))
         posted_msg = self.slack_client.api_call("reactions.add",
                                     channel=channel,
                                     name=emoji,
@@ -52,6 +56,7 @@ class AddReaction(Response):
     def add_reaction(self, text):
         listen_for = self.match_string.search(text).group().replace('"', '').strip()
         react_with = self.emoji_string.search(text).group().replace(':', '')
+        logging.info('Storing reaction :{0}: for pattern "{1}"'.format(react_with, listen_for))
         self._cache[listen_for] = react_with
         return listen_for, react_with
 

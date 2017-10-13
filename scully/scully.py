@@ -13,12 +13,20 @@ class Scully(object):
 
     RATE_LIMIT = 0.25
 
-    def __init__(self, client=SlackClient):
+    def __init__(self, fname=None, client=SlackClient):
+        self.logging(fname=fname)
+        logging.info('Starting Scully bot!')
         self.slack_client = client(os.environ.get('SCULLY_TOKEN'))
         self.responses = []
         for resp in Response.__subclasses__():
             self.responses.append(resp(self.slack_client))
             logging.info('Registered {}'.format(resp.__name__))
+
+    def logging(self, fname=None):
+        logging.basicConfig(filename=fname,
+                            format='%(asctime)s %(levelname)s: %(message)s',
+                            datefmt='%m/%d/%Y %I:%M:%S %p',
+                            level=logging.DEBUG)
 
     def connect(self):
         self.slack_client.rtm_connect()
@@ -41,12 +49,7 @@ class Scully(object):
 def run():
     verbose = sys.argv[-1]
     fname = LOG_FILE if verbose == '-v' else None
-    logging.basicConfig(filename=fname,
-                        format='%(asctime)s %(levelname)s: %(message)s',
-                        datefmt='%m/%d/%Y %I:%M:%S %p',
-                        level=logging.DEBUG)
-    logging.info('Starting Scully bot!')
-    bot = Scully()
+    bot = Scully(fname=fname)
     logging.info('Scully initialized.')
     try:
         bot.start()
