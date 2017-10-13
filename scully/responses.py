@@ -64,13 +64,13 @@ class GetTickerPrice(Response):
                 stock = Share(ticker)
                 current = stock.get_price()
                 high, low = stock.get_days_high(), stock.get_days_low()
-                open_price = stock.get_open()
+                prev_close = stock.get_prev_close()
                 if current is None:
                     resp = "{0} doesn't appear to be actively traded right now.".format(ticker)
                 else:
                     resp = "{0} is currently trading at ${1}, compared with today's high of ${2} and a low of ${3}".format(ticker, current, high, low)
                 report_msg = self.say(resp, **msg)
-                emoji = 'chart_with_upwards_trend' if current > open_price else 'chart_with_downwards_trend'
+                emoji = 'chart_with_upwards_trend' if current > prev_close else 'chart_with_downwards_trend'
                 self.react(emoji, **report_msg)
             except:
                 logging.error('Stock pull failed for ticker {}'.format(ticker))
