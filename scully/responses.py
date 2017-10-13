@@ -79,7 +79,7 @@ class GetTickerPrice(Response):
 class AddReaction(Response):
 
     call_signature = re.compile('scully.*react to ".+" with :.*:', re.IGNORECASE)
-    ignore_pattern = re.compile('"\s+"')
+    ignore_pattern = re.compile('"+\s*"+')
     match_string = re.compile('".+"')
     emoji_string = re.compile(':.*:')
 
