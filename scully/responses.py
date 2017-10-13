@@ -33,7 +33,8 @@ class Response(object):
         return posted_msg
 
     def sanitize(self, txt):
-        return txt.replace('“', '"').replace('”', '"')
+        '''Replace curly quotes and remove things in brackets'''
+        return re.sub("{.*?}", "", txt.replace('“', '"').replace('”', '"'))
 
     def __init__(self, slack_client):
         self.slack_client = slack_client
