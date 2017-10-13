@@ -58,8 +58,10 @@ class AddReaction(Response):
         super().__init__(slack_client)
         if os.path.exists(fname):
             self._cache = self.load(fname=fname)
+            logging.info('Loaded emoji reactions cache from {}'.format(fname))
         else:
             self._cache = {}
+            logging.info('Starting fresh emoji reactions cache.')
 
         self.fname = fname
 
