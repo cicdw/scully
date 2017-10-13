@@ -82,6 +82,10 @@ def test_add_reactions_ignores_empty_strings(slack):
     add_new([msg])
     add_new([{'text': 'new msg'}])
     slack.api_call.assert_not_called()
+    msg = {'text': 'scully react to "   " with :emoji:'}
+    add_new([msg])
+    add_new([{'text': 'new msg'}])
+    slack.api_call.assert_not_called()
 
 
 def test_add_reactions_ignores_things_in_brackets(slack):
