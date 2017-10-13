@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import re
+from yahoo_finance import Share
 
 
 CACHE_FILE = os.environ.get('SCULLY_EMOJI_CACHE')
@@ -39,6 +40,9 @@ class Response(object):
     def __init__(self, slack_client):
         self.slack_client = slack_client
 
+    def should_respond(self):
+        raise NotImplementedError
+
     def _reply(self, stream):
         if stream:
             for msg in stream:
@@ -47,6 +51,29 @@ class Response(object):
 
     def __call__(self, stream):
         self._reply(stream)
+
+
+class GetTickerPrice(Response):
+
+    ticker = re.compile('\$\s\w+')
+
+    def reply(self, msg):
+        if self.ticker.match(msg.get('text', '')):
+            ticker = self.ticker.match(msg.get('text')).group().split()[1]
+            try:
+                stock = Share(ticker)
+                current = stock.get_price()
+                high, low = stock.get_days_high(), stock.get_days_low()
+                open_price = stock.get_open()
+                if current is None:
+                    resp = "{0} doesn't appear to be actively traded right now.".format(ticker)
+                else:
+                    resp = "{0} is currently trading at ${1}, compared with today's high of ${2} and a low of ${3}".format(ticker, current, high, low)
+                report_msg = self.say(resp, **msg)
+                emoji = 'chart_with_upwards_trend' if current > open_price else 'chart_with_downwards_trend'
+                self.react(emoji, **report_msg)
+            except:
+                logging.error('Stock pull failed for ticker {}'.format(ticker))
 
 
 class AddReaction(Response):
