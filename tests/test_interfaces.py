@@ -53,6 +53,14 @@ def test_help_menu_works_with_multiple_requests(slack):
                                                text=expected, channel='private')
 
 
+def test_help_menu_ignores_triple_quotes(slack):
+    helper = Help(slack)
+    helper([{'text': '$ help ``` help', 'channel': 'private'}])
+    expected =  '```{}```'.format(Help.cli_doc)
+    assert helper.slack_client.api_called_with('chat.postMessage',
+                                               text=expected, channel='private')
+
+
 def test_help_menu_works_with_bad_request(slack):
     helper = Help(slack)
     helper([{'text': '$ help NOTHING', 'channel': 'private'}])

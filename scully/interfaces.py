@@ -62,7 +62,9 @@ class Help(Interface):
         classes = HELP_REGISTRY.keys() if len(classes) == 0 else classes
         reply = []
         for c in classes:
-            if c not in HELP_REGISTRY:
+            if '```' in c:
+                continue
+            elif c not in HELP_REGISTRY:
                 reply.append('no help available for {}'.format(c))
             else:
                 reply.append(HELP_REGISTRY[c])
