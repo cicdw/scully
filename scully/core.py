@@ -2,9 +2,15 @@ import logging
 
 
 HELP_REGISTRY = {}
-def register_help(post):
-    HELP_REGISTRY[post.cmd] = post.cli_doc
-    return post
+REGISTRY = []
+def register(register_help=False):
+    def decorator(post):
+        if register_help:
+            HELP_REGISTRY[post.cmd] = post.cli_doc
+
+        REGISTRY.append(post)
+        return post
+    return decorator
 
 
 class Post(object):

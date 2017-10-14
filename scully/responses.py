@@ -3,7 +3,8 @@ import logging
 import os
 import re
 from yahoo_finance import Share
-from .core import Post
+from .core import HELP_REGISTRY, Post, register
+from .interfaces import Interface
 
 CACHE_FILE = os.environ.get('SCULLY_EMOJI_CACHE')
 
@@ -27,7 +28,11 @@ class Response(Post):
         self._reply(stream)
 
 
-class AddReaction(Response):
+@register(register_help=True)
+class AddReaction(Response, Interface):
+
+    cmd = 'react'
+    cli_doc = '$ react "new_pattern" :emoji: adds :emoji: reaction to all future occurences of "new_pattern"'
 
     call_signature = re.compile('scully.*react to ".+" with :.*:', re.IGNORECASE)
     ignore_pattern = re.compile('"+\s*"+')
@@ -55,27 +60,37 @@ class AddReaction(Response):
             with open(self.fname, 'w') as f:
                 json.dump(self._cache, f)
 
-    def add_reaction(self, text):
-        listen_for = self.match_string.search(text).group().replace('"', '').strip()
-        react_with = self.emoji_string.search(text).group().replace(':', '')
+    def add_reaction(self, listen_for, react_with):
         logging.info('{0}: Storing reaction {1} for pattern "{2}"'.format(self.name, react_with, listen_for))
         self._cache[listen_for] = react_with
         self.save()
         return listen_for, react_with
 
     def reply(self, msg):
+        self._interface(msg) # hack to allow multiple types of use
         text = self.sanitize(msg.get('text', ''))
         reactions = [emoji for t, emoji in self._cache.items() if t.lower() in text.lower()]
         if self.call_signature.search(text) and not self.ignore_pattern.search(text):
-            new_string, new_emoji = self.add_reaction(text)
-            success_msg = self.say('--reaction added for "{}"--'.format(new_string), **msg)
-            self.react(new_emoji, **success_msg)
+            listen_for = self.match_string.search(text).group().replace('"', '').strip()
+            react_with = self.emoji_string.search(text).group().replace(':', '')
+            self.add_reaction(listen_for, react_with)
+            success_msg = self.say('--reaction added for "{}"--'.format(listen_for), **msg)
+            self.react(react_with, **success_msg)
 
         if reactions:
             for emoji in reactions:
                 self.react(emoji, **msg)
 
+    def interface(self, *args, msg=None):
+        p, e = args[:2]
+        listen_for = self.match_string.search(self.sanitize(p)).group().replace('"', '').strip()
+        react_with = self.emoji_string.search(e).group().replace(':', '')
+        self.add_reaction(listen_for, react_with)
+        success_msg = self.say('--reaction added for "{}"--'.format(listen_for), **msg)
+        self.react(react_with, **success_msg)
 
+
+@register()
 class AtMentions(Response):
 
     def reply(self, msg):
@@ -84,6 +99,7 @@ class AtMentions(Response):
             self.say('I WANT TO BELIEVE', **msg)
 
 
+@register()
 class Aliens(Response):
 
     def reply(self, msg):

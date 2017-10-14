@@ -40,11 +40,11 @@ def test_add_reactions_confirms(slack):
 
 def test_add_reactions_reacts(slack):
     add_new = AddReaction(slack)
-    msg = {'text': 'scully, react to "foo" with :bar:', 'channel': 'cat'}
+    msg = {'text': 'scully, react to "foo" with :bar:', 'channel': 'private'}
     add_new([msg])
     new_msg = {'text': 'Foo is ridiculous', 'channel': 'cat'}
     add_new([new_msg])
-    assert slack.api_called_with('reactions.add', name='bar')
+    assert slack.api_called_with('reactions.add', name='bar', channel='cat')
 
 
 def test_add_reactions_ignores_nested_quotes(slack):

@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import scully
 from scully.interfaces import GetTickerPrice, Help, Interface
+from scully.responses import AddReaction
 
 
 @pytest.fixture
@@ -77,3 +78,12 @@ def test_help_menu_works_with_stocks(slack):
     expected = '```{}```'.format(GetTickerPrice.cli_doc)
     assert helper.slack_client.api_called_with('chat.postMessage',
                                                text=expected, channel='private')
+
+
+def test_add_reactions_reacts(slack):
+    add_new = AddReaction(slack)
+    msg = {'text': '$ react "foo" :bar:', 'channel': 'private'}
+    add_new([msg])
+    new_msg = {'text': 'Foo is ridiculous', 'channel': 'cat'}
+    add_new([new_msg])
+    assert slack.api_called_with('reactions.add', name='bar', channel='cat')
