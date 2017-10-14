@@ -83,6 +83,10 @@ class AddReaction(Response, Interface):
 
     def interface(self, *args, msg=None):
         p, e = args[:2]
+        if not self.match_string.search(self.sanitize(p)):
+            return
+        if not self.emoji_string.search(e):
+            return
         listen_for = self.match_string.search(self.sanitize(p)).group().replace('"', '').strip()
         react_with = self.emoji_string.search(e).group().replace(':', '')
         self.add_reaction(listen_for, react_with)

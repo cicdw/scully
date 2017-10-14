@@ -80,6 +80,15 @@ def test_help_menu_works_with_stocks(slack):
                                                text=expected, channel='private')
 
 
+def test_add_reactions_doesnt_break(slack):
+    add_new = AddReaction(slack)
+    msg = {'text': '$ react foo :bar:', 'channel': 'private'}
+    add_new([msg])
+    new_msg = {'text': 'Foo is ridiculous', 'channel': 'cat'}
+    add_new([new_msg])
+    assert slack.api_not_called()
+
+
 def test_add_reactions_reacts(slack):
     add_new = AddReaction(slack)
     msg = {'text': '$ react "foo" :bar:', 'channel': 'private'}
