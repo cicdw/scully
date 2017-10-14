@@ -3,7 +3,7 @@ import logging
 
 HELP_REGISTRY = {}
 def register_help(post):
-    HELP_REGISTRY[post.name] = post.cli_doc
+    HELP_REGISTRY[post.cmd] = post.cli_doc
     return post
 
 

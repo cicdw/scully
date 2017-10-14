@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 
 import scully
-from scully.interfaces import GetTickerPrice, Interface
+from scully.interfaces import GetTickerPrice, Help, Interface
 
 
 @pytest.fixture
@@ -42,3 +42,13 @@ def test_get_stock_ticker_does_the_thing(slack):
         assert broker.slack_client.api_called_with('chat.postMessage', channel='money')
         assert broker.slack_client.api_called_with('reactions.add',
                                             name='chart_with_upwards_trend')
+
+
+def test_help_menu_works_with_stocks(slack):
+    helper = Help(slack)
+    helper([{'text': 'just chatting away', 'channel': 'main'}])
+    assert helper.slack_client.api_not_called()
+    helper([{'text': '$ help stock', 'channel': 'private'}])
+    expected = '```{}```'.format(GetTickerPrice.cli_doc)
+    assert helper.slack_client.api_called_with('chat.postMessage',
+                                               text=expected, channel='private')

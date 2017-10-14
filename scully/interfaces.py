@@ -32,7 +32,7 @@ class Interface(Post):
 class GetTickerPrice(Interface):
 
     cmd = 'stock'
-    cli_doc = '$ stock ticker1 ticker2 ... tickerk reports daily price info for the listed tickers.'
+    cli_doc = '$ stock ticker_1 ticker_2 ... ticker_k reports daily price info for the listed tickers.'
 
     def interface(self, *tickers, msg=None):
         try:
@@ -61,6 +61,6 @@ class Help(Interface):
         classes = HELP_REGISTRY.keys() if len(classes) == 0 else classes
         for c in classes:
             if c not in HELP_REGISTRY:
-                self.say('no help available for {}'.format(c.name), **msg)
+                self.say('no help available for {}'.format(c), **msg)
             else:
-                self.say('```{}```'.format(c.cli_doc))
+                self.say('```{}```'.format(HELP_REGISTRY[c]), **msg)
