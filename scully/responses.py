@@ -10,6 +10,19 @@ CACHE_FILE = os.environ.get('SCULLY_EMOJI_CACHE')
 
 class Response(object):
 
+    user = 'U7G9A6Y7R'
+    AT = '<@U7G9A6Y7R>'
+
+    @property
+    def prompt(self):
+        return re.compile('^\$\s{}'.format(self.cmd))
+
+    def _interface(self, msg):
+        text = msg.get('text', '')
+        if self.prompt.search(text) and self.user != msg.get('user'):
+            _, cmd, *args = text.split()
+            self.interface(*args, msg=msg)
+
     @property
     def __name__(self):
         return type(self).__name__
@@ -40,27 +53,38 @@ class Response(object):
     def __init__(self, slack_client):
         self.slack_client = slack_client
 
-    def should_respond(self):
-        raise NotImplementedError
-
     def _reply(self, stream):
         if stream:
             for msg in stream:
                 logging.info('Received {}'.format(msg))
-                self.reply(msg)
+                if hasattr(self, 'cmd'):
+                    self._interface(msg)
+                else:
+                    self.reply(msg)
 
     def __call__(self, stream):
         self._reply(stream)
 
 
+class Help(Response):
+
+    cmd = 'help'
+    def interface(self, *args, msg=None):
+        for resp in Response.__subclasses__():
+            if hasattr(resp, 'cmd') and resp.cmd == args[0]:
+                self.say(resp.cli_doc, **msg)
+            elif len(args) == 0:
+                self.say('no help available', **msg)
+
+
 class GetTickerPrice(Response):
 
-    ticker = re.compile('\$\s\w+')
+    cmd = 'stock'
+    cli_doc = '$ stock ticker1 ticker2 ... tickerk reports daily price info for the listed tickers.'
 
-    def reply(self, msg):
-        if self.ticker.match(msg.get('text', '')):
-            ticker = self.ticker.match(msg.get('text')).group().split()[1]
-            try:
+    def interface(self, *tickers, msg=None):
+        try:
+            for ticker in tickers:
                 stock = Share(ticker)
                 current = stock.get_price()
                 high, low = stock.get_days_high(), stock.get_days_low()
@@ -72,8 +96,8 @@ class GetTickerPrice(Response):
                 report_msg = self.say(resp, **msg)
                 emoji = 'chart_with_upwards_trend' if current > prev_close else 'chart_with_downwards_trend'
                 self.react(emoji, **report_msg)
-            except:
-                logging.error('Stock pull failed for ticker {}'.format(ticker))
+        except:
+            logging.error('Stock pull failed for ticker {}'.format(ticker))
 
 
 class AddReaction(Response):
@@ -124,10 +148,15 @@ class AddReaction(Response):
             for emoji in reactions:
                 self.react(emoji, **msg)
 
+    def interface(self, listen_for, react_with):
+        listen_for = listen_for.strip()
+        react_with = react_with.replace(':', '')
+        logging.info('Storing reaction :{0}: for pattern "{1}"'.format(react_with, listen_for))
+        self._cache[listen_for] = react_with
+        self.save()
+
 
 class AtMentions(Response):
-
-    AT = '<@U7G9A6Y7R>'
 
     def reply(self, msg):
         text = msg.get('text', '')

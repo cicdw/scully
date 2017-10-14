@@ -54,7 +54,7 @@ def test_at_mentions_doesnt_believe(slack):
     atmentions = AtMentions(slack)
     msg = {'text': 'none', 'channel': 'foo'}
     atmentions([msg])
-    slack.api_call.assert_not_called()
+    assert slack.api_not_called()
 
 
 def test_add_reactions_confirms(slack):
@@ -81,15 +81,15 @@ def test_add_reactions_ignores_nested_quotes(slack):
     msg = {'text': 'scully react to """" with :emoji:'}
     add_new([msg])
     add_new([{'text': 'new msg'}])
-    slack.api_call.assert_not_called()
+    assert slack.api_not_called()
     msg = {'text': 'scully react to """""" with :emoji:'}
     add_new([msg])
     add_new([{'text': 'new msg'}])
-    slack.api_call.assert_not_called()
+    assert slack.api_not_called()
     msg = {'text': 'scully react to ""  "" with :emoji:'}
     add_new([msg])
     add_new([{'text': 'new msg'}])
-    slack.api_call.assert_not_called()
+    assert slack.api_not_called()
 
 
 def test_add_reactions_ignores_empty_strings(slack):
@@ -97,18 +97,18 @@ def test_add_reactions_ignores_empty_strings(slack):
     msg = {'text': 'scully react to "" with :emoji:'}
     add_new([msg])
     add_new([{'text': 'new msg'}])
-    slack.api_call.assert_not_called()
+    assert slack.api_not_called()
     msg = {'text': 'scully react to "   " with :emoji:'}
     add_new([msg])
     add_new([{'text': 'new msg'}])
-    slack.api_call.assert_not_called()
+    assert slack.api_not_called()
 
 
 def test_add_reactions_ignores_things_in_brackets(slack):
     add_new = AddReaction(slack)
     msg = {'text': '''10/13/2017 12:56:19 AM INFO: {text': 'scully please react to "tennis" with :money_mouth_face:'}'''}
     add_new([msg])
-    slack.api_call.assert_not_called()
+    assert slack.api_not_called()
 
 
 def test_add_reactions_handles_curly_quotes(slack):
