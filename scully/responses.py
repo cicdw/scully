@@ -3,45 +3,19 @@ import logging
 import os
 import re
 from yahoo_finance import Share
-
+from .core import Post
 
 CACHE_FILE = os.environ.get('SCULLY_EMOJI_CACHE')
 
 
-class Response(object):
-
-    @property
-    def __name__(self):
-        return type(self).__name__
+class Response(Post):
 
     def reply(self, msg):
         raise NotImplementedError
 
-    def say(self, words, channel=None, **kwargs):
-        logging.info('{0} saying "{1}" in channel {2}'.format(self.__name__, words, channel))
-        posted_msg = self.slack_client.api_call("chat.postMessage",
-                                    channel=channel,
-                                    text=words,
-                                    as_user=True)
-        return posted_msg
-
-    def react(self, emoji, channel=None, ts=None, **kwargs):
-        logging.info('{0} reacting with :{1}: in channel {2}'.format(self.__name__, emoji, channel))
-        posted_msg = self.slack_client.api_call("reactions.add",
-                                    channel=channel,
-                                    name=emoji,
-                                    timestamp=ts, as_user=True)
-        return posted_msg
-
     def sanitize(self, txt):
         '''Replace curly quotes and remove things in brackets'''
         return re.sub("{.*?}", "", txt.replace('“', '"').replace('”', '"'))
-
-    def __init__(self, slack_client):
-        self.slack_client = slack_client
-
-    def should_respond(self):
-        raise NotImplementedError
 
     def _reply(self, stream):
         if stream:
@@ -51,29 +25,6 @@ class Response(object):
 
     def __call__(self, stream):
         self._reply(stream)
-
-
-class GetTickerPrice(Response):
-
-    ticker = re.compile('\$\s\w+')
-
-    def reply(self, msg):
-        if self.ticker.match(msg.get('text', '')):
-            ticker = self.ticker.match(msg.get('text')).group().split()[1]
-            try:
-                stock = Share(ticker)
-                current = stock.get_price()
-                high, low = stock.get_days_high(), stock.get_days_low()
-                prev_close = stock.get_prev_close()
-                if current is None:
-                    resp = "{0} doesn't appear to be actively traded right now.".format(ticker)
-                else:
-                    resp = "{0} is currently trading at ${1}, compared with today's high of ${2} and a low of ${3}".format(ticker, current, high, low)
-                report_msg = self.say(resp, **msg)
-                emoji = 'chart_with_upwards_trend' if current > prev_close else 'chart_with_downwards_trend'
-                self.react(emoji, **report_msg)
-            except:
-                logging.error('Stock pull failed for ticker {}'.format(ticker))
 
 
 class AddReaction(Response):
@@ -107,7 +58,7 @@ class AddReaction(Response):
     def add_reaction(self, text):
         listen_for = self.match_string.search(text).group().replace('"', '').strip()
         react_with = self.emoji_string.search(text).group().replace(':', '')
-        logging.info('Storing reaction :{0}: for pattern "{1}"'.format(react_with, listen_for))
+        logging.info('{0}: Storing reaction {1} for pattern "{2}"'.format(self.name, react_with, listen_for))
         self._cache[listen_for] = react_with
         self.save()
         return listen_for, react_with
@@ -126,8 +77,6 @@ class AddReaction(Response):
 
 
 class AtMentions(Response):
-
-    AT = '<@U7G9A6Y7R>'
 
     def reply(self, msg):
         text = msg.get('text', '')
