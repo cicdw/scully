@@ -59,8 +59,11 @@ class Help(Interface):
 
     def interface(self, *classes, msg=None):
         classes = HELP_REGISTRY.keys() if len(classes) == 0 else classes
+        reply = []
         for c in classes:
             if c not in HELP_REGISTRY:
-                self.say('no help available for {}'.format(c), **msg)
+                reply.append('no help available for {}'.format(c))
             else:
-                self.say('```{}```'.format(HELP_REGISTRY[c]), **msg)
+                reply.append(HELP_REGISTRY[c])
+        fmt_reply = '```' + '\n'.join(reply) + '```'
+        self.say(fmt_reply, **msg)

@@ -44,6 +44,23 @@ def test_get_stock_ticker_does_the_thing(slack):
                                             name='chart_with_upwards_trend')
 
 
+def test_help_menu_works_with_multiple_requests(slack):
+    helper = Help(slack)
+    helper([{'text': '$ help stock NOTHING', 'channel': 'private'}])
+    expected = '```{}\n'.format(GetTickerPrice.cli_doc)
+    expected += 'no help available for NOTHING```'
+    assert helper.slack_client.api_called_with('chat.postMessage',
+                                               text=expected, channel='private')
+
+
+def test_help_menu_works_with_bad_request(slack):
+    helper = Help(slack)
+    helper([{'text': '$ help NOTHING', 'channel': 'private'}])
+    expected = '```no help available for NOTHING```'
+    assert helper.slack_client.api_called_with('chat.postMessage',
+                                               text=expected, channel='private')
+
+
 def test_help_menu_works_with_stocks(slack):
     helper = Help(slack)
     helper([{'text': 'just chatting away', 'channel': 'main'}])
