@@ -67,6 +67,7 @@ class AddReaction(Response, Interface):
         return listen_for, react_with
 
     def reply(self, msg):
+        self._interface(msg) # hack to allow multiple types of use
         text = self.sanitize(msg.get('text', ''))
         reactions = [emoji for t, emoji in self._cache.items() if t.lower() in text.lower()]
         if self.call_signature.search(text) and not self.ignore_pattern.search(text):
