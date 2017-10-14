@@ -4,8 +4,7 @@ from slackclient import SlackClient
 import sys
 from time import sleep
 
-from .interfaces import Interface
-from .responses import Response
+from .core import REGISTRY
 
 
 LOG_FILE = os.path.expanduser('~/scully.log')
@@ -21,13 +20,10 @@ class Scully(object):
         self.slack_client = client(os.environ.get('SCULLY_TOKEN'))
         self.responses = []
 
-        for resp in Response.__subclasses__():
-            self.responses.append(resp(self.slack_client))
-            logging.info('Registered {}'.format(resp.__name__))
-
-        for resp in Interface.__subclasses__():
-            self.responses.append(resp(self.slack_client))
-            logging.info('Registered {}'.format(resp.__name__))
+        for resp in REGISTRY:
+            init = resp(self.slack_client)
+            self.responses.append(init)
+            logging.info('Registered {}'.format(init.name))
 
     def logging(self, fname=None):
         logging.basicConfig(filename=fname,

@@ -3,7 +3,7 @@ import logging
 import os
 import re
 from yahoo_finance import Share
-from .core import HELP_REGISTRY, register_help, Post
+from .core import HELP_REGISTRY, register, Post
 
 
 class Interface(Post):
@@ -28,7 +28,7 @@ class Interface(Post):
         self._reply(stream)
 
 
-@register_help
+@register(register_help=True)
 class GetTickerPrice(Interface):
 
     cmd = 'stock'
@@ -52,7 +52,7 @@ class GetTickerPrice(Interface):
             logging.error('Stock pull failed for ticker {}'.format(ticker))
 
 
-@register_help
+@register(register_help=True)
 class Help(Interface):
 
     cmd = 'help'
