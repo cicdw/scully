@@ -51,7 +51,8 @@ class Hangman(Interface):
             self.say('```---no game in progress---```', **msg)
             return
         status = ' '.join([t[1] for t in self.word])
-        self.say('```' + status + '```', **msg)
+        guesses_left = '{} guesses left'.format(self.max_guesses - len(self.guesses))
+        self.say('```' + status + ', ' + guesses_left + '```', **msg)
 
     def is_won(self):
         if len([g for _, g in self.word if g == '_']) == 0:
