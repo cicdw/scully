@@ -9,7 +9,7 @@ from .interfaces import Interface
 class Hangman(Interface):
 
     cmd = 'hangman'
-    cli_doc = '''$ hangman new "word" starts a new hangman game!
+    cli_doc = '''$ hangman new "word" [[guess_limit]] starts a new hangman game!
     $ hangman "*" guesses a single letter
     $ hangman --empty-- displays the current game status
     $ hangman kill terminates the current game
@@ -37,6 +37,11 @@ class Hangman(Interface):
         else:
             word = self.sanitize(word.group()).replace('"', '')
 
+        try:
+            self.max_guesses = int(args[1])
+        except:
+            self.max_guesses = 10
+
         self.in_play = True
         self.word = list(zip(word, '_' * len(word)))
         self.say('```hangman game begun with word "{}"```'.format(word), **msg)
@@ -46,7 +51,8 @@ class Hangman(Interface):
             self.say('```---no game in progress---```', **msg)
             return
         status = ' '.join([t[1] for t in self.word])
-        self.say('```' + status + '```', **msg)
+        guesses_left = '{} guesses left'.format(self.max_guesses - len(self.guesses))
+        self.say('```' + status + ', ' + guesses_left + '```', **msg)
 
     def is_won(self):
         if len([g for _, g in self.word if g == '_']) == 0:
