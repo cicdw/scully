@@ -107,7 +107,19 @@ def test_scully_supports_winners(slack):
                                  name='100')
 
 
-def test_scully_stops_after_ten_guesses(slack):
+def test_scully_allows_for_user_defined_guesses(slack):
+    game = Hangman(slack)
+    game([{"text": '$ hangman new "word" 1', "channel": 'game'}])
+    game([{'text': '$ hangman "q"', 'channel': 'game'}])
+    assert slack.api_called_with('chat.postMessage',
+                                 text='```Game lost! The word was "{}"```'.format("word"))
+    assert slack.api_called_with('reactions.add', name='skull')
+    game([{'text': '$ hangman'}])
+    assert slack.api_called_with('chat.postMessage',
+                                 text='```---no game in progress---```')
+
+
+def test_scully_stops_after_ten_guesses_by_default(slack):
     game = Hangman(slack)
     game([{"text": '$ hangman new "word"', "channel": 'game'}])
     for letter in 'qetyuipasf':

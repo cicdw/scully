@@ -37,6 +37,11 @@ class Hangman(Interface):
         else:
             word = self.sanitize(word.group()).replace('"', '')
 
+        try:
+            self.max_guesses = int(args[1])
+        except:
+            self.max_guesses = 10
+
         self.in_play = True
         self.word = list(zip(word, '_' * len(word)))
         self.say('```hangman game begun with word "{}"```'.format(word), **msg)
