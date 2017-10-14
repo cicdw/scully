@@ -14,13 +14,6 @@ def test_response_objects_reply_when_called():
     assert resp.called is True
 
 
-def test_fixture_is_present(slack):
-    atmentions = AtMentions(slack)
-    msg = {'text': '<@U7G9A6Y7R>', 'channel': 'foo'}
-    atmentions([msg])
-    assert slack.api_called_with('chat.postMessage', text='I WANT TO BELIEVE', channel='foo')
-
-
 def test_at_mentions_believes(slack):
     atmentions = AtMentions(slack)
     msg = {'text': '<@U7G9A6Y7R>', 'channel': 'foo'}
