@@ -14,9 +14,13 @@ class Hangman(Interface):
     $ hangman --empty-- displays the current game status
     $ hangman kill terminates the current game
 '''
-    in_play = False
-    guesses = []
-    max_guesses = 10
+
+
+    def __init__(self, *args, **kwargs):
+        self.in_play = False
+        self.guesses = []
+        self.max_guesses = 10
+        super().__init__(*args, **kwargs)
 
     def start_game(self, *args, msg=None):
         if len(args) == 0:
@@ -24,6 +28,7 @@ class Hangman(Interface):
             return
         elif self.in_play:
             self.say('Game already in progress! use `$ hangman kill` to end it.', **msg)
+            return
 
         word = re.compile('".+"').search(args[0])
         if not word or ' ' in args[0]:
@@ -61,10 +66,15 @@ class Hangman(Interface):
             return
         if guess in self.guesses:
             self.say('```already guessed {}!```'.format(guess), **msg)
+            return
 
         self.word = self._update_letters(guess)
         if len(self.guesses) == self.max_guesses:
-            pass
+            ans = ''.join([w for w, _ in self.word])
+            loser_msg = self.say('```Game lost! The word was "{}"```'.format(ans), **msg)
+            self.react('skull', **loser_msg)
+            self.clear_game()
+            return
 
         self.print_status(msg=msg)
         if self.is_won():
