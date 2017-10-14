@@ -9,7 +9,7 @@ from .interfaces import Interface
 class Hangman(Interface):
 
     cmd = 'hangman'
-    cli_doc = '''$ hangman new "word" starts a new hangman game!
+    cli_doc = '''$ hangman new "word" [[guess_limit]] starts a new hangman game!
     $ hangman "*" guesses a single letter
     $ hangman --empty-- displays the current game status
     $ hangman kill terminates the current game
