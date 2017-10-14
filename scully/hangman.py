@@ -17,7 +17,8 @@ $ hangman --empty-- displays the current game status
 
     def start_game(self, *args, msg=None):
         if len(args) == 0:
-            self.say('no game in progress', **msg)
+            self.say('```---no game in progress---```', **msg)
+            return
 
         word = re.compile('".+"').search(args[0])
         if not word:
@@ -34,6 +35,12 @@ $ hangman --empty-- displays the current game status
         status = ''.join([t[1] for t in self.word])
         self.say('```' + status + '```', **msg)
 
+    def is_won(self):
+        if len([g for _, g in self.word if g == '_']) == 0:
+            return True
+        else:
+            return False
+
     def guess(self, c, msg=None):
         guess = re.compile('".+"').search(c)
         if not guess:
@@ -49,6 +56,14 @@ $ hangman --empty-- displays the current game status
 
         self.word = self._update_letters(guess)
         self.print_status(msg=msg)
+        if self.is_won():
+            self.say('```You win!```', **msg)
+            self.clear_game()
+
+    def clear_game(self):
+        self.in_play = False
+        self.guesses = []
+        del self.word
 
     def _update_letters(self, guess):
         out = [(w, t.replace('_', guess) if w == guess else t) for w, t in self.word]
@@ -57,7 +72,7 @@ $ hangman --empty-- displays the current game status
     def interface(self, *args, msg=None):
         if not self.in_play:
             self.start_game(*args, msg=msg)
-        if len(args) == 0:
+        elif len(args) == 0:
             self.print_status(msg=msg)
         else:
             self.guess(args[0], msg=msg)
