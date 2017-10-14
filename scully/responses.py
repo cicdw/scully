@@ -14,10 +14,6 @@ class Response(Post):
     def reply(self, msg):
         raise NotImplementedError
 
-    def sanitize(self, txt):
-        '''Replace curly quotes and remove things in brackets'''
-        return re.sub("{.*?}", "", txt.replace('“', '"').replace('”', '"'))
-
     def _reply(self, stream):
         if stream:
             for msg in stream:
