@@ -52,10 +52,11 @@ class GetTickerPrice(Interface):
             logging.error('Stock pull failed for ticker {}'.format(ticker))
 
 
+@register_help
 class Help(Interface):
 
     cmd = 'help'
-    cli_doc = 'Displays help menu.'
+    cli_doc = '$ help [[optional cmd names]] displays help menu for listed commands (which should be separated by spaces)'
 
     def interface(self, *classes, msg=None):
         classes = HELP_REGISTRY.keys() if len(classes) == 0 else classes
