@@ -1,4 +1,5 @@
 import logging
+import re
 
 
 HELP_REGISTRY = {}
@@ -21,6 +22,10 @@ class Post(object):
     @property
     def name(self):
         return type(self).__name__
+
+    def sanitize(self, txt):
+        '''Replace curly quotes and remove things in brackets'''
+        return re.sub("{.*?}", "", txt.replace('“', '"').replace('”', '"'))
 
     def say(self, words, channel=None, **kwargs):
         logging.info('{0} saying "{1}" in channel {2}'.format(self.name, words, channel))
