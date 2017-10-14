@@ -4,6 +4,7 @@ from slackclient import SlackClient
 import sys
 from time import sleep
 
+from .interfaces import Interface
 from .responses import Response
 
 
@@ -19,7 +20,12 @@ class Scully(object):
         logging.info('Starting Scully bot!')
         self.slack_client = client(os.environ.get('SCULLY_TOKEN'))
         self.responses = []
+
         for resp in Response.__subclasses__():
+            self.responses.append(resp(self.slack_client))
+            logging.info('Registered {}'.format(resp.__name__))
+
+        for resp in Interface.__subclasses__():
             self.responses.append(resp(self.slack_client))
             logging.info('Registered {}'.format(resp.__name__))
 

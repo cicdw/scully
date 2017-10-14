@@ -3,7 +3,7 @@ import logging
 import os
 import re
 from yahoo_finance import Share
-from .core import Post
+from .core import HELP_REGISTRY, register_help, Post
 
 
 class Interface(Post):
@@ -28,6 +28,7 @@ class Interface(Post):
         self._reply(stream)
 
 
+@register_help
 class GetTickerPrice(Interface):
 
     cmd = 'stock'
@@ -49,3 +50,17 @@ class GetTickerPrice(Interface):
                 self.react(emoji, **report_msg)
         except:
             logging.error('Stock pull failed for ticker {}'.format(ticker))
+
+
+class Help(Interface):
+
+    cmd = 'help'
+    cli_doc = 'Displays help menu.'
+
+    def interface(self, *classes, msg=None):
+        classes = HELP_REGISTRY.keys() if len(classes) == 0 else classes
+        for c in classes:
+            if c not in HELP_REGISTRY:
+                self.say('no help available for {}'.format(c.name), **msg)
+            else:
+                self.say('```{}```'.format(c.cli_doc))

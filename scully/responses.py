@@ -58,7 +58,7 @@ class AddReaction(Response):
     def add_reaction(self, text):
         listen_for = self.match_string.search(text).group().replace('"', '').strip()
         react_with = self.emoji_string.search(text).group().replace(':', '')
-        logging.info('{0}: Storing reaction {1} for pattern "{2}"'.format(self.__name__, react_with, listen_for))
+        logging.info('{0}: Storing reaction {1} for pattern "{2}"'.format(self.name, react_with, listen_for))
         self._cache[listen_for] = react_with
         self.save()
         return listen_for, react_with

@@ -1,17 +1,23 @@
 import logging
 
 
+HELP_REGISTRY = {}
+def register_help(post):
+    HELP_REGISTRY[post.name] = post.cli_doc
+    return post
+
+
 class Post(object):
 
     user = 'U7G9A6Y7R'
     AT = '<@U7G9A6Y7R>'
 
     @property
-    def __name__(self):
+    def name(self):
         return type(self).__name__
 
     def say(self, words, channel=None, **kwargs):
-        logging.info('{0} saying "{1}" in channel {2}'.format(self.__name__, words, channel))
+        logging.info('{0} saying "{1}" in channel {2}'.format(self.name, words, channel))
         posted_msg = self.slack_client.api_call("chat.postMessage",
                                     channel=channel,
                                     text=words,
@@ -19,7 +25,7 @@ class Post(object):
         return posted_msg
 
     def react(self, emoji, channel=None, ts=None, **kwargs):
-        logging.info('{0} reacting with :{1}: in channel {2}'.format(self.__name__, emoji, channel))
+        logging.info('{0} reacting with :{1}: in channel {2}'.format(self.name, emoji, channel))
         posted_msg = self.slack_client.api_call("reactions.add",
                                     channel=channel,
                                     name=emoji,
