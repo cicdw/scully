@@ -9,17 +9,21 @@ from .interfaces import Interface
 class Hangman(Interface):
 
     cmd = 'hangman'
-    cli_doc = '''$ hangman "word" starts a new hangman game!
+    cli_doc = '''$ hangman new "word" starts a new hangman game!
     $ hangman "*" guesses a single letter
     $ hangman --empty-- displays the current game status
+    $ hangman kill terminates the current game
 '''
     in_play = False
     guesses = []
+    max_guesses = 10
 
     def start_game(self, *args, msg=None):
         if len(args) == 0:
-            self.say('```---no game in progress---```', **msg)
+            self.print_status(msg=msg)
             return
+        elif self.in_play:
+            self.say('Game already in progress! use `$ hangman kill` to end it.', **msg)
 
         word = re.compile('".+"').search(args[0])
         if not word or ' ' in args[0]:
@@ -33,6 +37,9 @@ class Hangman(Interface):
         self.say('```hangman game begun with word "{}"```'.format(word), **msg)
 
     def print_status(self, msg=None):
+        if not self.in_play:
+            self.say('```---no game in progress---```', **msg)
+            return
         status = ' '.join([t[1] for t in self.word])
         self.say('```' + status + '```', **msg)
 
@@ -56,6 +63,9 @@ class Hangman(Interface):
             self.say('```already guessed {}!```'.format(guess), **msg)
 
         self.word = self._update_letters(guess)
+        if len(self.guesses) == self.max_guesses:
+            pass
+
         self.print_status(msg=msg)
         if self.is_won():
             success_msg = self.say('```You win!```', **msg)
@@ -69,13 +79,16 @@ class Hangman(Interface):
 
     def _update_letters(self, guess):
         out = [(w, t.replace('_', guess) if w == guess else t) for w, t in self.word]
+        self.guesses.append(guess)
         return out
 
     def interface(self, *args, msg=None):
-        if not self.in_play:
-            self.start_game(*args, msg=msg)
-        elif len(args) == 0:
+        if len(args) == 0:
+            self.print_status(msg=msg)
+        elif args[0] == 'new':
+            self.start_game(*args[1:], msg=msg)
+        elif args[0] == 'kill':
+            self.clear_game()
             self.print_status(msg=msg)
         else:
             self.guess(args[0], msg=msg)
-
