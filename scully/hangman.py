@@ -9,9 +9,9 @@ from .interfaces import Interface
 class Hangman(Interface):
 
     cmd = 'hangman'
-    cli_doc = '''$ hangman "word or phrase" starts a new hangman game!
-$ hangman "*" guesses a single letter
-$ hangman --empty-- displays the current game status
+    cli_doc = '''$ hangman "word" starts a new hangman game!
+    $ hangman "*" guesses a single letter
+    $ hangman --empty-- displays the current game status
 '''
     in_play = False
     guesses = []
@@ -22,7 +22,7 @@ $ hangman --empty-- displays the current game status
             return
 
         word = re.compile('".+"').search(args[0])
-        if not word:
+        if not word or ' ' in args[0]:
             self.say('```invalid starting word {} provided.```'.format(args[0]), **msg)
             return
         else:
@@ -58,7 +58,8 @@ $ hangman --empty-- displays the current game status
         self.word = self._update_letters(guess)
         self.print_status(msg=msg)
         if self.is_won():
-            self.say('```You win!```', **msg)
+            success_msg = self.say('```You win!```', **msg)
+            self.react('100', **success_msg)
             self.clear_game()
 
     def clear_game(self):
