@@ -5,6 +5,7 @@ from .core import register
 from .interfaces import Interface
 
 
+@register(register_help=True)
 class Hangman(Interface):
 
     cmd = 'hangman'
@@ -32,7 +33,7 @@ $ hangman --empty-- displays the current game status
         self.say('```hangman game begun with word "{}"```'.format(word), **msg)
 
     def print_status(self, msg=None):
-        status = ''.join([t[1] for t in self.word])
+        status = ' '.join([t[1] for t in self.word])
         self.say('```' + status + '```', **msg)
 
     def is_won(self):
