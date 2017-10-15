@@ -126,6 +126,13 @@ def test_hangman_doesnt_break_on_guesses_with_no_games(slack):
                                  text='```---no game in progress---```')
 
 
+def test_hangman_doesnt_break_on_word_guesses_with_no_games(slack):
+    game = Hangman(slack)
+    game([{'text': '$ hangman guess "word"'}])
+    assert slack.api_called_with('chat.postMessage',
+                                 text='```---no game in progress---```')
+
+
 def test_word_guess_kwarg_handles_curly_quotes(slack):
     game = Hangman(slack)
     game([{'text': '$ hangman new "word"'}])
