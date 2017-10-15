@@ -134,7 +134,10 @@ class Hangman(Interface):
         elif args[0] == 'new':
             self.start_game(*args[1:], msg=msg)
         elif args[0] == 'guess':
-            self.word_guess(args[1], msg=msg)
+            if self.in_play:
+                self.word_guess(args[1], msg=msg)
+            else:
+                self.print_status(msg=msg)
         elif args[0] == 'kill':
             self.clear_game()
             self.print_status(msg=msg)
