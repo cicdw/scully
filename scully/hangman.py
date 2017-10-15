@@ -11,6 +11,7 @@ class Hangman(Interface):
     cmd = 'hangman'
     cli_doc = '''$ hangman new "word" [[guess_limit]] starts a new hangman game!
     $ hangman "*" guesses a single letter
+    $ hangman guess "*" guesses a full word
     $ hangman --empty-- displays the current game status
     $ hangman kill terminates the current game
 '''
@@ -105,8 +106,13 @@ class Hangman(Interface):
             self.print_status(msg=msg)
         elif args[0] == 'new':
             self.start_game(*args[1:], msg=msg)
+        elif args[0] == 'guess':
+            self.word_guess(*args[1:], msg=msg)
         elif args[0] == 'kill':
             self.clear_game()
             self.print_status(msg=msg)
         else:
-            self.guess(args[0], msg=msg)
+            if self.in_play:
+                self.guess(args[0], msg=msg)
+            else:
+                self.print_status(msg=msg)
