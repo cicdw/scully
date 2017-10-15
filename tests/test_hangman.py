@@ -119,6 +119,20 @@ def test_scully_allows_for_user_defined_guesses(slack):
                                  text='```---no game in progress---```')
 
 
+def test_scully_handles_curly_quotes_words(slack):
+    game = Hangman(slack)
+    game([{'text': '$ hangman new “e”'}])
+    assert slack.api_called_with('chat.postMessage',
+                                 text='```hangman game begun with word "e"```')
+
+
+def test_scully_handles_curly_quotes_guesses(slack):
+    game = Hangman(slack)
+    game([{'text': '$ hangman new "e"'}])
+    game([{'text': '$ hangman “e”'}])
+    assert slack.api_called_with('chat.postMessage', text='```You win!```')
+
+
 def test_scully_stops_after_ten_guesses_by_default(slack):
     game = Hangman(slack)
     game([{"text": '$ hangman new "word"', "channel": 'game'}])

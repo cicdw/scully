@@ -30,12 +30,13 @@ class Hangman(Interface):
             self.say('Game already in progress! use `$ hangman kill` to end it.', **msg)
             return
 
-        word = re.compile('".+"').search(args[0])
-        if not word or ' ' in args[0]:
+        cleaned = self.sanitize(args[0])
+        word = re.compile('".+"').search(cleaned)
+        if not word or ' ' in cleaned:
             self.say('```invalid starting word {} provided.```'.format(args[0]), **msg)
             return
         else:
-            word = self.sanitize(word.group()).replace('"', '')
+            word = word.group().replace('"', '')
 
         try:
             self.max_guesses = int(args[1])
@@ -61,6 +62,7 @@ class Hangman(Interface):
             return False
 
     def guess(self, c, msg=None):
+        c = self.sanitize(c)
         guess = re.compile('".+"').search(c)
         if not guess:
             self.say('```invalid guess {} provided.```'.format(c), **msg)
