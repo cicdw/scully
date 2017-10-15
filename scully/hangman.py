@@ -11,6 +11,7 @@ class Hangman(Interface):
     cmd = 'hangman'
     cli_doc = '''$ hangman new "word" [[guess_limit]] starts a new hangman game!
     $ hangman "*" guesses a single letter
+    $ hangman guess "*" guesses a full word
     $ hangman --empty-- displays the current game status
     $ hangman kill terminates the current game
 '''
@@ -61,6 +62,33 @@ class Hangman(Interface):
         else:
             return False
 
+    def word_guess(self, guess, msg=None):
+        guess = re.compile('".+"').search(self.sanitize(guess))
+        if not guess:
+            self.say('```invalid guess {} provided.```'.format(c), **msg)
+            return
+
+        guess = guess.group().replace('"','')
+        if guess in self.guesses:
+            self.say('```already guessed {}!```'.format(guess), **msg)
+            return
+
+        self.guesses.append(guess)
+        ans = ''.join([w for w, _ in self.word])
+        if guess == ans:
+            success_msg = self.say('```You win!```', **msg)
+            self.react('100', **success_msg)
+            self.clear_game()
+            return
+        elif len(self.guesses) == self.max_guesses:
+            loser_msg = self.say('```Game lost! The word was "{}"```'.format(ans), **msg)
+            self.react('skull', **loser_msg)
+            self.clear_game()
+            return
+        else:
+            self.react('-1', **msg)
+            self.print_status(msg=msg)
+
     def guess(self, c, msg=None):
         c = self.sanitize(c)
         guess = re.compile('".+"').search(c)
@@ -105,8 +133,13 @@ class Hangman(Interface):
             self.print_status(msg=msg)
         elif args[0] == 'new':
             self.start_game(*args[1:], msg=msg)
+        elif args[0] == 'guess':
+            self.word_guess(args[1], msg=msg)
         elif args[0] == 'kill':
             self.clear_game()
             self.print_status(msg=msg)
         else:
-            self.guess(args[0], msg=msg)
+            if self.in_play:
+                self.guess(args[0], msg=msg)
+            else:
+                self.print_status(msg=msg)
