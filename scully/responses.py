@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import re
+import schedule
 from yahoo_finance import Share
 from .core import HELP_REGISTRY, Post, register
 from .interfaces import Interface
@@ -87,6 +88,20 @@ class AddReaction(Response, Interface):
         self.add_reaction(listen_for, react_with)
         success_msg = self.say('--reaction added for "{}"--'.format(listen_for), **msg)
         self.react(react_with, **success_msg)
+
+
+@register()
+class Monday(Response):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        schedule.every().monday.at("9:00").do(self.do)
+
+    def reply(self, *args):
+        pass
+
+    def do(self):
+        self.say("Monday, amiright?? :coffeeparrot:", channel='C5AE0R325')
 
 
 @register()
