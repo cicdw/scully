@@ -17,7 +17,6 @@ class Response(Post):
     def _reply(self, stream):
         if stream:
             for msg in stream:
-                logging.info('Received {}'.format(msg))
                 self.reply(msg)
 
     def __call__(self, stream):
