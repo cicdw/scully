@@ -36,7 +36,8 @@ class Scully(object):
 
     def listen(self):
         incoming = self.slack_client.rtm_read()
-        logging.info('Received {}'.format(incoming))
+        if incoming:
+            logging.info('Received {}'.format(incoming))
         for resp in self.responses:
             resp(incoming)
 
