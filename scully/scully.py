@@ -1,5 +1,6 @@
 import logging
 import os
+import schedule
 from slackclient import SlackClient
 import sys
 from time import sleep
@@ -47,6 +48,7 @@ class Scully(object):
         end_iter = 0 if stop_after is None else stop_after
         while not end_iter:
             sleep(self.RATE_LIMIT)
+            schedule.run_pending()
             self.listen()
             end_iter = max(end_iter - 1, 0)
 
