@@ -6,6 +6,7 @@ dependencies:
     - pip:
         - schedule
         - slackclient
+        - twython
         - yahoo-finance
     - pytest
     - python=3.5

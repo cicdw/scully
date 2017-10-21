@@ -4,6 +4,7 @@ import os
 import random
 import re
 import schedule
+from twython import Twython
 from yahoo_finance import Share
 from .core import HELP_REGISTRY, Post, register
 from .interfaces import GetTickerPrice, Interface
@@ -23,6 +24,92 @@ class Response(Post):
 
     def __call__(self, stream):
         self._reply(stream)
+
+
+@register()
+class Twitter(Response):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.twitter = Twython(os.environ.get('SCULLY_API_KEY'),
+                               os.environ.get('SCULLY_API_SECRET'))
+
+    def reply(self, msg):
+        hashtag = re.compile('#\S+(\s|$)')
+        mentioned = hashtag.search(msg.get('text', ''))
+        if mentioned:
+            query = mentioned.group().strip()
+            logging.info(mentioned)
+            logging.info(query)
+            tweets = self.twitter.search(q=query, count=15, lang="en")
+            try:
+                url = 'http://twitter.com/statuses/' + random.choice(tweets['statuses'])['id_str']
+                self.say(url, **msg)
+            except:
+                pass
+
+
+@register()
+class Monday(Response):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        schedule.every().monday.at("9:00").do(self.do)
+
+    def reply(self, *args):
+        pass
+
+    def do(self):
+        self.say("Monday, amiright?? :coffeeparrot:", channel='C5AE0R325')
+
+
+@register()
+class AtMentions(Response):
+
+    def reply(self, msg):
+        text = msg.get('text', '')
+        if self.AT in text:
+            self.say('I WANT TO BELIEVE', **msg)
+
+
+@register()
+class DanielVerCheck(Response):
+
+    ticker = 'VER'
+    pinned_at = 8.015
+    success_msgs = ['Daniel is raking in the money!',
+                    'Daniel, buy me a boat!']
+    fail_msgs = ["Men are like bank accounts. Without a lot of money, they don't generate much interest.",
+                 "Daniel, if you need any financial assistance, your parents seem like nice people."]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        schedule.every().tuesday.at("4:30").do(self.do)
+        schedule.every().thursday.at("4:30").do(self.do)
+
+    def reply(self, *args):
+        pass
+
+    def do(self):
+        try:
+            current, high, low, prev_close = GetTickerPrice.get_stock_info(self.ticker)
+            perc_change = (float(current) - self.pinned_at) / self.pinned_at
+            if perc_change > 0:
+                msg = random.choice(self.success_msgs)
+                msg += ' :money_mouth_face: :money_with_wings:\n'
+                msg += 'VER is up {:.2f}%!!'.format(perc_change)
+                out = self.say(msg, channel='C5AE0R325')
+                self.react('moneybag', **out)
+                self.react('chart_with_upwards_trend', **out)
+            if perc_change <= 0:
+                msg = random.choice(self.fail_msgs)
+                msg += ' :hankey:\n'
+                msg += 'VER is down {:.2f}%...'.format(perc_change)
+                out = self.say(msg, channel='C5AE0R325')
+                self.react('-1', **out)
+                self.react('chart_with_downwards_trend', **out)
+        except:
+            logging.error('{0}: Daniel scheduled stock pull failed for ticker {1}'.format(self.name, self.ticker))
 
 
 @register(register_help=True)
@@ -89,69 +176,6 @@ class AddReaction(Response, Interface):
         self.add_reaction(listen_for, react_with)
         success_msg = self.say('--reaction added for "{}"--'.format(listen_for), **msg)
         self.react(react_with, **success_msg)
-
-
-@register()
-class DanielVerCheck(Response):
-
-    ticker = 'VER'
-    pinned_at = 8.015
-    success_msgs = ['Daniel is raking in the money!',
-                    'Daniel, buy me a boat!']
-    fail_msgs = ["Men are like bank accounts. Without a lot of money, they don't generate much interest.",
-                 "Daniel, if you need any financial assistance, your parents seem like nice people."]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        schedule.every().tuesday.at("4:30").do(self.do)
-        schedule.every().thursday.at("4:30").do(self.do)
-
-    def reply(self, *args):
-        pass
-
-    def do(self):
-        try:
-            current, high, low, prev_close = GetTickerPrice.get_stock_info(self.ticker)
-            perc_change = (float(current) - self.pinned_at) / self.pinned_at
-            if perc_change > 0:
-                msg = random.choice(self.success_msgs)
-                msg += ' :money_mouth_face: :money_with_wings:\n'
-                msg += 'VER is up {:.2f}%!!'.format(perc_change)
-                out = self.say(msg, channel='C5AE0R325')
-                self.react('moneybag', **out)
-                self.react('chart_with_upwards_trend', **out)
-            if perc_change <= 0:
-                msg = random.choice(self.fail_msgs)
-                msg += ' :hankey:\n'
-                msg += 'VER is down {:.2f}%...'.format(perc_change)
-                out = self.say(msg, channel='C5AE0R325')
-                self.react('-1', **out)
-                self.react('chart_with_downwards_trend', **out)
-        except:
-            logging.error('{0}: Daniel scheduled stock pull failed for ticker {1}'.format(self.name, self.ticker))
-
-
-@register()
-class Monday(Response):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        schedule.every().monday.at("9:00").do(self.do)
-
-    def reply(self, *args):
-        pass
-
-    def do(self):
-        self.say("Monday, amiright?? :coffeeparrot:", channel='C5AE0R325')
-
-
-@register()
-class AtMentions(Response):
-
-    def reply(self, msg):
-        text = msg.get('text', '')
-        if self.AT in text:
-            self.say('I WANT TO BELIEVE', **msg)
 
 
 @register()
