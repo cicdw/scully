@@ -117,14 +117,14 @@ class DanielVerCheck(Response):
                 msg = random.choice(self.success_msgs)
                 msg += ' :money_mouth_face: :money_with_wings:\n'
                 msg += 'VER is up {:.2f}%!!'.format(perc_change)
-                out = self.say(msg, channel='D7F4J5G9H')
+                out = self.say(msg, channel='C5AE0R325')
                 self.react('moneybag', **out)
                 self.react('chart_with_upwards_trend', **out)
             if perc_change <= 0:
                 msg = random.choice(self.fail_msgs)
                 msg += ' :hankey:\n'
                 msg += 'VER is down {:.2f}%...'.format(perc_change)
-                out = self.say(msg, channel='D7F4J5G9H')
+                out = self.say(msg, channel='C5AE0R325')
                 self.react('-1', **out)
                 self.react('chart_with_downwards_trend', **out)
         except:
