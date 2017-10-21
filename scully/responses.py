@@ -1,11 +1,12 @@
 import json
 import logging
 import os
+import random
 import re
 import schedule
 from yahoo_finance import Share
 from .core import HELP_REGISTRY, Post, register
-from .interfaces import Interface
+from .interfaces import GetTickerPrice, Interface
 
 CACHE_FILE = os.environ.get('SCULLY_EMOJI_CACHE')
 
@@ -88,6 +89,46 @@ class AddReaction(Response, Interface):
         self.add_reaction(listen_for, react_with)
         success_msg = self.say('--reaction added for "{}"--'.format(listen_for), **msg)
         self.react(react_with, **success_msg)
+
+
+@register()
+class DanielVerCheck(Response):
+
+    ticker = 'VER'
+    pinned_at = 8.015
+    success_msgs = ['Daniel is raking in the money!',
+                    'Daniel, buy me a boat!']
+    fail_msgs = ["Men are like bank accounts. Without a lot of money, they don't generate much interest.",
+                 "Daniel, if you need any financial assistance, your parents seem like nice people."]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        schedule.every().tuesday.at("4:30").do(self.do)
+        schedule.every().thursday.at("4:30").do(self.do)
+
+    def reply(self, *args):
+        pass
+
+    def do(self):
+        try:
+            current, high, low, prev_close = GetTickerPrice.get_stock_info(self.ticker)
+            perc_change = (float(current) - self.pinned_at) / self.pinned_at
+            if perc_change > 0:
+                msg = random.choice(self.success_msgs)
+                msg += ' :money_mouth_face: :money_with_wings:\n'
+                msg += 'VER is up {:.2f}%!!'.format(perc_change)
+                out = self.say(msg, channel='D7F4J5G9H')
+                self.react('moneybag', **out)
+                self.react('chart_with_upwards_trend', **out)
+            if perc_change <= 0:
+                msg = random.choice(self.fail_msgs)
+                msg += ' :hankey:\n'
+                msg += 'VER is down {:.2f}%...'.format(perc_change)
+                out = self.say(msg, channel='D7F4J5G9H')
+                self.react('-1', **out)
+                self.react('chart_with_downwards_trend', **out)
+        except:
+            logging.error('{0}: Daniel scheduled stock pull failed for ticker {1}'.format(self.name, self.ticker))
 
 
 @register()

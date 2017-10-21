@@ -1,7 +1,7 @@
-import pytest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
-from scully.responses import AddReaction, AtMentions, Response
+import scully
+from scully.responses import AddReaction, AtMentions, DanielVerCheck, Response
 
 
 def test_response_objects_reply_when_called():
@@ -99,3 +99,31 @@ def test_add_reactions_is_case_insensitive(slack):
     assert slack.api_called_with('reactions.add', name='bar')
     add_new([{'text': 'foo me bro'}])
     assert slack.api_called_with('reactions.add', name='bar')
+
+
+def test_daniel_ticker_posts_negative(slack):
+    broker = DanielVerCheck(slack)
+    symbol = MagicMock()
+    with patch('scully.interfaces.Share') as share:
+        share.return_value = symbol
+        symbol.get_price.return_value = 0.0
+        broker([{'text': 'just chatting about the weather'}])
+        assert broker.slack_client.api_not_called()
+        broker.do()
+        assert broker.slack_client.api_called_with('chat.postMessage')
+        assert broker.slack_client.api_called_with('reactions.add',
+                                            name='chart_with_downwards_trend')
+
+
+def test_daniel_ticker_posts_positive(slack):
+    broker = DanielVerCheck(slack)
+    symbol = MagicMock()
+    with patch('scully.interfaces.Share') as share:
+        share.return_value = symbol
+        symbol.get_price.return_value = 10000.0
+        broker([{'text': 'just chatting about the weather'}])
+        assert broker.slack_client.api_not_called()
+        broker.do()
+        assert broker.slack_client.api_called_with('chat.postMessage')
+        assert broker.slack_client.api_called_with('reactions.add',
+                                            name='chart_with_upwards_trend')

@@ -34,13 +34,18 @@ class GetTickerPrice(Interface):
     cmd = 'stock'
     cli_doc = '$ stock ticker_1 ticker_2 ... ticker_k reports daily price info for the listed tickers.'
 
+    @staticmethod
+    def get_stock_info(ticker):
+        stock = Share(ticker)
+        current = stock.get_price()
+        high, low = stock.get_days_high(), stock.get_days_low()
+        prev_close = stock.get_prev_close()
+        return current, high, low, prev_close
+
     def interface(self, *tickers, msg=None):
         try:
             for ticker in tickers:
-                stock = Share(ticker)
-                current = stock.get_price()
-                high, low = stock.get_days_high(), stock.get_days_low()
-                prev_close = stock.get_prev_close()
+                current, high, low, prev_close = self.get_stock_info(ticker)
                 if current is None:
                     resp = "{0} doesn't appear to be actively traded right now.".format(ticker)
                 else:
