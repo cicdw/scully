@@ -1,4 +1,5 @@
 schedule
 slackclient
 pytest
+twython
 yahoo-finance
