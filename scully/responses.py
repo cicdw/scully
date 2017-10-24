@@ -84,8 +84,8 @@ class DanielVerCheck(Response):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        schedule.every().tuesday.at("4:30").do(self.do)
-        schedule.every().thursday.at("4:30").do(self.do)
+        schedule.every().tuesday.at("16:30").do(self.do)
+        schedule.every().thursday.at("16:30").do(self.do)
 
     def reply(self, *args):
         pass
