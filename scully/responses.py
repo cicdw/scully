@@ -121,7 +121,7 @@ class AddReaction(Response, Interface):
     call_signature = re.compile('scully.*react to ".+" with :.*:', re.IGNORECASE)
     ignore_pattern = re.compile('"+\s*"+')
     match_string = re.compile('".+"')
-    emoji_string = re.compile(':.*:*:')
+    emoji_string = re.compile(':.*:*.*:')
 
     def __init__(self, slack_client, fname=CACHE_FILE):
         super().__init__(slack_client)
@@ -153,7 +153,8 @@ class AddReaction(Response, Interface):
     def _compute_reaction(self, text):
         text = self.sanitize(text)
         listen_for = self.match_string.search(text).group().replace('"', '').strip()
-        react_with = self.emoji_string.search(text).group().replace(':', '')
+        matched = self.emoji_string.search(text)
+        react_with = text[(matched.start() + 1):(matched.end() - 1)]
         return listen_for, react_with
 
     def reply(self, msg):
