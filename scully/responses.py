@@ -121,7 +121,7 @@ class AddReaction(Response, Interface):
     call_signature = re.compile('scully.*react to ".+" with :.*:', re.IGNORECASE)
     ignore_pattern = re.compile('"+\s*"+')
     match_string = re.compile('".+"')
-    emoji_string = re.compile(':.*:')
+    emoji_string = re.compile(':.*:*.*:')
 
     def __init__(self, slack_client, fname=CACHE_FILE):
         super().__init__(slack_client)
@@ -150,13 +150,19 @@ class AddReaction(Response, Interface):
         self.save()
         return listen_for, react_with
 
+    def _compute_reaction(self, text):
+        text = self.sanitize(text)
+        listen_for = self.match_string.search(text).group().replace('"', '').strip()
+        matched = self.emoji_string.search(text)
+        react_with = text[(matched.start() + 1):(matched.end() - 1)]
+        return listen_for, react_with
+
     def reply(self, msg):
         self._interface(msg) # hack to allow multiple types of use
         text = self.sanitize(msg.get('text', ''))
         reactions = [emoji for t, emoji in self._cache.items() if t.lower() in text.lower()]
         if self.call_signature.search(text) and not self.ignore_pattern.search(text):
-            listen_for = self.match_string.search(text).group().replace('"', '').strip()
-            react_with = self.emoji_string.search(text).group().replace(':', '')
+            listen_for, react_with = self._compute_reaction(text)
             self.add_reaction(listen_for, react_with)
             success_msg = self.say('--reaction added for "{}"--'.format(listen_for), **msg)
             self.react(react_with, **success_msg)
@@ -171,8 +177,8 @@ class AddReaction(Response, Interface):
             return
         if not self.emoji_string.search(e):
             return
-        listen_for = self.match_string.search(self.sanitize(p)).group().replace('"', '').strip()
-        react_with = self.emoji_string.search(e).group().replace(':', '')
+
+        listen_for, react_with = self._compute_reaction(p + e)
         self.add_reaction(listen_for, react_with)
         success_msg = self.say('--reaction added for "{}"--'.format(listen_for), **msg)
         self.react(react_with, **success_msg)

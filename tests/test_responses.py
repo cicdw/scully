@@ -90,6 +90,14 @@ def test_add_reactions_handles_curly_quotes(slack):
     assert slack.api_called_with('reactions.add', name='-1')
 
 
+def test_add_reactions_handles_skin_tones(slack):
+    add_new = AddReaction(slack)
+    msg = {'text': 'scully react to "deuces" with :v::skin-tone-3:'}
+    add_new([msg])
+    assert slack.api_called_with('chat.postMessage', text='--reaction added for "deuces"--')
+    assert slack.api_called_with('reactions.add', name='v::skin-tone-3')
+
+
 def test_add_reactions_is_case_insensitive(slack):
     add_new = AddReaction(slack)
     msg = {'text': 'Hey Scully will you react to "FoO" with :bar:', 'channel': 'cat'}
