@@ -32,7 +32,7 @@ def test_hangman_displays_status_after_guess(slack):
                                  text='```_ _ _ _, 10 guesses left```')
     game([{'text': '$ hangman "d"', 'channel': 'game'}])
     assert slack.api_called_with('chat.postMessage',
-                                 text='```_ _ _ d, 9 guesses left```')
+                                 text='```_ _ _ d, 10 guesses left```')
 
 
 def test_hangman_doesnt_break_with_bad_guess(slack):
@@ -55,19 +55,19 @@ def test_hangman_correctly_handles_sequential_guesses(slack):
                                  text='```_ _ _ _, 10 guesses left```')
     game([{'text': '$ hangman "d"', 'channel': 'game'}])
     assert slack.api_called_with('chat.postMessage',
-                                 text='```_ _ _ d, 9 guesses left```')
+                                 text='```_ _ _ d, 10 guesses left```')
     game([{'text': '$ hangman "e"', 'channel': 'game'}])
     assert slack.api_called_with('chat.postMessage',
-                                 text='```_ _ _ d, 8 guesses left```')
+                                 text='```_ _ _ d, 9 guesses left```')
     game([{'text': '$ hangman "o"', 'channel': 'game'}])
     assert slack.api_called_with('chat.postMessage',
-                                 text='```_ o _ d, 7 guesses left```')
+                                 text='```_ o _ d, 9 guesses left```')
     game([{'text': '$ hangman "w"', 'channel': 'game'}])
     assert slack.api_called_with('chat.postMessage',
-                                 text='```w o _ d, 6 guesses left```')
+                                 text='```w o _ d, 9 guesses left```')
     game([{'text': '$ hangman "l"', 'channel': 'game'}])
     assert slack.api_called_with('chat.postMessage',
-                                 text='```w o _ d, 5 guesses left```')
+                                 text='```w o _ d, 8 guesses left```')
 
 
 def test_hangman_correctly_ends_game(slack):
@@ -78,16 +78,16 @@ def test_hangman_correctly_ends_game(slack):
                                  text='```_ _ _ _, 10 guesses left```')
     game([{'text': '$ hangman "d"', 'channel': 'game'}])
     assert slack.api_called_with('chat.postMessage',
-                                 text='```_ _ _ d, 9 guesses left```')
+                                 text='```_ _ _ d, 10 guesses left```')
     game([{'text': '$ hangman "o"', 'channel': 'game'}])
     assert slack.api_called_with('chat.postMessage',
-                                 text='```_ o _ d, 8 guesses left```')
+                                 text='```_ o _ d, 10 guesses left```')
     game([{'text': '$ hangman "w"', 'channel': 'game'}])
     assert slack.api_called_with('chat.postMessage',
-                                 text='```w o _ d, 7 guesses left```')
+                                 text='```w o _ d, 10 guesses left```')
     game([{'text': '$ hangman "r"', 'channel': 'game'}])
     assert slack.api_called_with('chat.postMessage',
-                                 text='```w o r d, 6 guesses left```')
+                                 text='```w o r d, 10 guesses left```')
     assert slack.api_called_with('chat.postMessage',
                                  text='```You win!```')
     game([{'text': '$ hangman', 'channel': 'game'}])
@@ -100,7 +100,7 @@ def test_scully_supports_winners(slack):
     game([{"text": '$ hangman new "e"', "channel": 'game'}])
     game([{'text': '$ hangman "e"', 'channel': 'game'}])
     assert slack.api_called_with('chat.postMessage',
-                                 text='```e, 9 guesses left```')
+                                 text='```e, 10 guesses left```')
     assert slack.api_called_with('chat.postMessage',
                                  text='```You win!```')
     assert slack.api_called_with('reactions.add',
