@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 
 import scully
-from scully.interfaces import GetTickerPrice, Help, Interface
+from scully.interfaces import GetTickerPrice, Help, Interface, Speak
 from scully.responses import AddReaction
 
 
@@ -52,6 +52,14 @@ def test_help_menu_works_with_multiple_requests(slack):
     expected += 'no help available for NOTHING```'
     assert helper.slack_client.api_called_with('chat.postMessage',
                                                text=expected, channel='private')
+
+
+def test_speak_say_posts_phrase_to_general(slack):
+    speaker = Speak(slack)
+    speaker([{'text': '$ say i am HERE', 'channel': 'private'}])
+    assert speaker.slack_client.api_called_with('chat.postMessage',
+                                               text='i am HERE',
+                                               channel='C5AE0R325')
 
 
 def test_help_menu_ignores_triple_quotes(slack):
