@@ -54,7 +54,7 @@ class GetTickerPrice(Interface):
                 emoji = 'chart_with_upwards_trend' if current > prev_close else 'chart_with_downwards_trend'
                 self.react(emoji, **report_msg)
         except:
-            logging.error('Stock pull failed for ticker {}'.format(ticker))
+            logging.exception('Stock pull failed for ticker {}'.format(ticker))
 
 
 @register(register_help=True)
@@ -75,3 +75,13 @@ class Help(Interface):
                 reply.append(HELP_REGISTRY[c])
         fmt_reply = '```' + '\n'.join(reply) + '```'
         self.say(fmt_reply, **msg)
+
+
+@register()
+class Speak(Interface):
+
+    cmd = 'say'
+    channel = 'C5AE0R325'
+
+    def interface(self, *phrase, msg=None):
+        self.say(' '.join(phrase), channel=self.channel)
