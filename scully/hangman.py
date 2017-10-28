@@ -95,6 +95,7 @@ class Hangman(Interface):
             return
 
         guess = self.sanitize(guess.group()).replace('"', '')
+        self.guesses.append(guess)
         is_won = self.game.send(guess)
         if is_won is False:
             loser_msg = self.say('```Game lost! The word was "{}"```'.format(self.word), **msg)
@@ -117,13 +118,20 @@ class Hangman(Interface):
         del self.word
         del self.game
 
+    @requires_game
+    def say_guesses(self, *args, msg=None, **kwargs):
+        guess_list = '"' + '", "'.join(self.guesses) + '"'
+        text = '```You have already guessed [{0}]```'.format(guess_list)
+        self.say(text, **msg)
+
     def interface(self, *args, msg=None):
         if len(args) == 0:
             self.print_status(msg=msg)
             return
 
         cmds = {'new': self.start_game,
-                'kill': self.clear_game}
+                'kill': self.clear_game,
+                'guesses': self.say_guesses}
 
         if args[0] in cmds:
             cmds[args[0]](*args[1:], msg=msg)
