@@ -75,3 +75,13 @@ class Help(Interface):
                 reply.append(HELP_REGISTRY[c])
         fmt_reply = '```' + '\n'.join(reply) + '```'
         self.say(fmt_reply, **msg)
+
+
+@register()
+class Speak(Interface):
+
+    cmd = 'say'
+    channel = 'C5AE0R325'
+
+    def interface(self, *phrase, msg=None):
+        self.say(' '.join(phrase), channel=self.channel)
