@@ -42,15 +42,16 @@ class Hangman(Interface):
             self.num_left = num_left
 
             guess = yield
-            revealed = ''.join([w if w == guess else g for g, w in zip(game_status, word)])
-            if revealed == word:
+            spaced_word = ' '.join(word)
+            revealed = ''.join([w if w == guess else g for g, w in zip(game_status, spaced_word)])
+            num_left -= 1 if revealed == game_status else 0
+            if revealed == spaced_word:
                 yield True
             elif guess == word:
                 yield True
             elif num_left == 0:
                 yield False
             else:
-                num_left -= 1 if revealed == game_status else 0
                 yield from play(revealed, num_left)
 
         return play(game_status, max_guesses)
