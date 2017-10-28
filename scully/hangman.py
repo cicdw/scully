@@ -21,17 +21,15 @@ class Hangman(Interface):
 
     cmd = 'hangman'
     cli_doc = '''$ hangman new "word" [[guess_limit]] starts a new hangman game!
-    $ hangman "*" guesses a single letter
-    $ hangman guess "*" guesses a full word
-    $ hangman --empty-- displays the current game status
-    $ hangman kill terminates the current game
+---> $ hangman "*" guesses a single letter or a full word
+---> $ hangman --empty-- displays the current game status
+---> $ hangman kill terminates the current game
 '''
 
 
     def __init__(self, *args, **kwargs):
         self.in_play = False
         self.guesses = []
-        self.max_guesses = 10
         super().__init__(*args, **kwargs)
 
     def new_game(self, word, max_guesses=10):

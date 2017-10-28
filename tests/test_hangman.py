@@ -145,7 +145,21 @@ def test_user_can_win_with_word_guess(slack):
                                  text='```You win!```')
 
 
-def test_scully_has_a_word_guess_kwarg(slack):
+def test_scully_handles_consecutive_games(slack):
+    game = Hangman(slack)
+    game([{'text': '$ hangman new "word"'}])
+    game([{'text': '$ hangman "word"'}])
+    assert slack.api_called_with('chat.postMessage',
+                                 text='```You win!```')
+    game([{'text': '$ hangman new "another"'}])
+    assert slack.api_called_with('chat.postMessage',
+                                 text='```hangman game begun with word "another"```')
+    game([{'text': '$ hangman'}])
+    assert slack.api_called_with('chat.postMessage',
+                                 text='```_ _ _ _ _ _ _, 10 guesses left```')
+
+
+def test_scully_has_a_word_guess_ability(slack):
     game = Hangman(slack)
     game([{'text': '$ hangman new "word"'}])
     game([{'text': '$ hangman "dumb"'}])
