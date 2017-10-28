@@ -1,8 +1,19 @@
 import logging
 import os
 import re
+from functools import wraps
 from .core import register
 from .interfaces import Interface
+
+
+def requires_game(f):
+    @wraps(f)
+    def check_game(hman, *args, **kwargs):
+        if not hman.in_play:
+            hman.say('```---no game in progress---```', **kwargs['msg'])
+        else:
+            return f(hman, *args, **kwargs)
+    return check_game
 
 
 @register(register_help=True)
@@ -23,6 +34,35 @@ class Hangman(Interface):
         self.max_guesses = 10
         super().__init__(*args, **kwargs)
 
+    def new_game(self, word, max_guesses=10):
+        '''Given a word and a guess limit, returns a
+        coroutine for playing hangman.  Guess letters
+        by sending messages to the coroutine.  Returns
+        True if you win, False otherwise.
+
+        Example
+        >>> g = game('jazz', 10)
+        >>> next(g) # prime the coroutine
+        >>> g.send('e') # guess 'e'
+        '''
+        game_status = '_' * len(word)
+
+        def play(game_status, num_left):
+            self.game_status = game_status
+            self.num_left = num_left
+
+            guess = yield
+            revealed = ''.join([w if w == guess else g for g, w in zip(game_status, word)])
+            if revealed == word:
+                yield True
+            elif num_left == 0:
+                yield False
+            else:
+                num_left -= 1 if revealed == game_status else 0
+                yield from play(revealed, num_left)
+
+        return play(game_status, max_guesses)
+
     def start_game(self, *args, msg=None):
         if len(args) == 0:
             self.print_status(msg=msg)
@@ -40,28 +80,21 @@ class Hangman(Interface):
             word = word.group().replace('"', '')
 
         try:
-            self.max_guesses = int(args[1])
+            self.num_left = int(args[1])
         except:
-            self.max_guesses = 10
+            self.num_left = 10
 
         self.in_play = True
-        self.word = list(zip(word, '_' * len(word)))
+        self.word = word
+        self.game = self.new_game(word, self.num_left)
         self.say('```hangman game begun with word "{}"```'.format(word), **msg)
 
+    @requires_game
     def print_status(self, msg=None):
-        if not self.in_play:
-            self.say('```---no game in progress---```', **msg)
-            return
-        status = ' '.join([t[1] for t in self.word])
-        guesses_left = '{} guesses left'.format(self.max_guesses - len(self.guesses))
-        self.say('```' + status + ', ' + guesses_left + '```', **msg)
+        guesses_left = '{} guesses left'.format(self.num_left)
+        self.say('```' + self.game_status + ', ' + guesses_left + '```', **msg)
 
-    def is_won(self):
-        if len([g for _, g in self.word if g == '_']) == 0:
-            return True
-        else:
-            return False
-
+    @requires_game
     def word_guess(self, guess, msg=None):
         guess = re.compile('".+"').search(self.sanitize(guess))
         if not guess:
@@ -74,8 +107,7 @@ class Hangman(Interface):
             return
 
         self.guesses.append(guess)
-        ans = ''.join([w for w, _ in self.word])
-        if guess == ans:
+        if guess == self.word:
             success_msg = self.say('```You win!```', **msg)
             self.react('100', **success_msg)
             self.clear_game()
@@ -86,6 +118,7 @@ class Hangman(Interface):
             self.clear_game()
             return
         else:
+            self.num_left -= 1
             self.react('-1', **msg)
             self.print_status(msg=msg)
 
@@ -131,18 +164,12 @@ class Hangman(Interface):
     def interface(self, *args, msg=None):
         if len(args) == 0:
             self.print_status(msg=msg)
-        elif args[0] == 'new':
-            self.start_game(*args[1:], msg=msg)
-        elif args[0] == 'guess':
-            if self.in_play:
-                self.word_guess(args[1], msg=msg)
-            else:
-                self.print_status(msg=msg)
-        elif args[0] == 'kill':
-            self.clear_game()
-            self.print_status(msg=msg)
+
+        cmds = {'new': self.start_game,
+                'guess': self.word_guess,
+                'kill': self.kill}
+
+        if args[0] in cmds:
+            cmds[args[0]](*args[1:], msg=msg)
         else:
-            if self.in_play:
-                self.guess(args[0], msg=msg)
-            else:
-                self.print_status(msg=msg)
+            self.guess(args[0], msg=msg)
