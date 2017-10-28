@@ -31,6 +31,7 @@ def test_hangman_displays_status_after_guess(slack):
     assert slack.api_called_with('chat.postMessage',
                                  text='```_ _ _ _, 10 guesses left```')
     game([{'text': '$ hangman "d"', 'channel': 'game'}])
+    from IPython import embed; embed()
     assert slack.api_called_with('chat.postMessage',
                                  text='```_ _ _ d, 10 guesses left```')
 
