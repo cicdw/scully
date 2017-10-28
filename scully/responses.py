@@ -109,7 +109,7 @@ class DanielVerCheck(Response):
                 self.react('-1', **out)
                 self.react('chart_with_downwards_trend', **out)
         except:
-            logging.error('{0}: Daniel scheduled stock pull failed for ticker {1}'.format(self.name, self.ticker))
+            logging.exception('{0}: Daniel scheduled stock pull failed for ticker {1}'.format(self.name, self.ticker))
 
 
 @register(register_help=True)

@@ -54,7 +54,7 @@ class GetTickerPrice(Interface):
                 emoji = 'chart_with_upwards_trend' if current > prev_close else 'chart_with_downwards_trend'
                 self.react(emoji, **report_msg)
         except:
-            logging.error('Stock pull failed for ticker {}'.format(ticker))
+            logging.exception('Stock pull failed for ticker {}'.format(ticker))
 
 
 @register(register_help=True)
