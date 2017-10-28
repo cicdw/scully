@@ -194,6 +194,15 @@ def test_scully_stops_after_ten_guesses_by_default(slack):
                                  text='```---no game in progress---```')
 
 
+def test_hangman_displays_previous_guesses_when_requested_one_guess(slack):
+    game = Hangman(slack)
+    game([{'text': '$ hangman new "word"'}])
+    game([{'text': '$ hangman "r"'}])
+    game([{'text': '$ hangman guesses'}])
+    assert slack.api_called_with('chat.postMessage',
+                                 text='```You have already guessed ["r"]```')
+
+
 def test_hangman_displays_previous_guesses_when_requested(slack):
     game = Hangman(slack)
     game([{'text': '$ hangman new "word"'}])
