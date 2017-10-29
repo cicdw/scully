@@ -4,6 +4,7 @@ import schedule
 from slackclient import SlackClient
 import sys
 from time import sleep
+from websocket._exceptions import WebSocketConnectionClosedException
 
 from .core import REGISTRY
 
@@ -32,19 +33,30 @@ class Scully(object):
                             datefmt='%m/%d/%Y %I:%M:%S %p',
                             level=logging.DEBUG)
 
-    def connect(self):
-        self.slack_client.rtm_connect()
+    def connect(self, max_retries=3):
+        ok = self.slack_client.rtm_connect()
+        retries = max_retries - 1
+        while not ok:
+            logging.debug("Connection failed; trying again in 5 seconds...")
+            sleep(5)
+            ok = self.slack_client.rtm_connect()
+            retries -= 1
+            if retries == 0:
+                raise RuntimeError("Connection to Slack failed.")
+        logging.info('Scully is connected.')
 
     def listen(self):
-        incoming = self.slack_client.rtm_read()
-        if incoming:
-            logging.info('Received {}'.format(incoming))
-        for resp in self.responses:
-            resp(incoming)
+        try:
+            incoming = self.slack_client.rtm_read()
+            if incoming:
+                logging.info('Received {}'.format(incoming))
+            for resp in self.responses:
+                resp(incoming)
+        except WebSocketConnectionClosedException:
+            self.connect()
 
     def start(self, stop_after=None):
         self.connect()
-        logging.info('Scully is connected.')
         end_iter = 0 if stop_after is None else stop_after
         while not end_iter:
             sleep(self.RATE_LIMIT)
