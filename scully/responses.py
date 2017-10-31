@@ -152,7 +152,7 @@ class AddReaction(Response, Interface):
 
     def _compute_reaction(self, text):
         text = self.sanitize(text)
-        listen_for = self.match_string.search(text).group().replace('"', '').strip()
+        listen_for = self.match_string.search(text).group().replace('"', '').strip().lower()
         matched = self.emoji_string.search(text)
         react_with = text[(matched.start() + 1):(matched.end() - 1)]
         return listen_for, react_with

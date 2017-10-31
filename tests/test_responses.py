@@ -102,10 +102,10 @@ def test_add_reactions_is_case_insensitive(slack):
     add_new = AddReaction(slack)
     msg = {'text': 'Hey Scully will you react to "FoO" with :bar:', 'channel': 'cat'}
     add_new([msg])
-    assert slack.api_called_with('chat.postMessage', text='--reaction added for "FoO"--',
+    assert slack.api_called_with('chat.postMessage', text='--reaction added for "foo"--',
                               channel='cat')
     assert slack.api_called_with('reactions.add', name='bar')
-    add_new([{'text': 'foo me bro'}])
+    add_new([{'text': 'Foo me bro'}])
     assert slack.api_called_with('reactions.add', name='bar')
 
 
