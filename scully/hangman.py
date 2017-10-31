@@ -34,6 +34,7 @@ class Hangman(Interface):
         super().__init__(*args, **kwargs)
 
     def new_game(self, word, max_guesses=10):
+        word = word.lower()
         game_status = ('_ ' * len(word)).strip()
 
         def play(game_status, num_left):
@@ -41,6 +42,7 @@ class Hangman(Interface):
             self.num_left = num_left
 
             guess = yield
+            guess = guess.lower()
             spaced_word = ' '.join(word)
             revealed = ''.join([w if w == guess else g for g, w in zip(game_status, spaced_word)])
             num_left -= 1 if revealed == game_status else 0

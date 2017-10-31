@@ -211,3 +211,14 @@ def test_hangman_displays_previous_guesses_when_requested(slack):
     game([{'text': '$ hangman guesses'}])
     assert slack.api_called_with('chat.postMessage',
                                  text='```You have already guessed ["dumb", "r"]```')
+
+
+def test_hangman_is_case_insensitive(slack):
+    game = Hangman(slack)
+    game([{'text': '$ hangman new "WoRd"'}])
+    game([{'text': '$ hangman "r"'}])
+    assert slack.api_called_with('chat.postMessage',
+                                 text='```_ _ r _, 10 guesses left```')
+    game([{'text': '$ hangman "word"'}])
+    assert slack.api_called_with('chat.postMessage',
+                                 text='```You win!```')
