@@ -25,9 +25,9 @@ def create_dialogue_list(episode):
     returns a list of tuples (character, words) of the dialogue from that
     episode'''
 
-    bolds = episode.find_all('b')
+    convos = episode.find_all('b') or episode.find_all('span', {'class': 'char'})
     dialogue = []
-    for item in bolds:
+    for item in convos:
         who = item.text.rstrip(':')
         what = str(item.next_sibling)
         dialogue.append((who, what))
