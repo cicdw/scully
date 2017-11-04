@@ -1,11 +1,12 @@
 from bs4 import BeautifulSoup
 import json
+from os.path import dirname, join
 import requests
 import sys
 
 
 BASE_URL = 'http://www.insidethex.co.uk/'
-FILENAME = 'xfiles_dialogue.json'
+FILENAME = join(dirname(__file__), '../data/xfiles_dialogue.json')
 
 
 def soupify_url(url):
