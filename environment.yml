@@ -2,11 +2,15 @@ name: scully
 
 dependencies:
     - beautifulsoup4
+    - jupyter
     - ipython
+    - matplotlib
+    - pandas
     - pip
     - pip:
         - schedule
         - slackclient
+        - stop-words
         - twython
         - yahoo-finance
     - pytest

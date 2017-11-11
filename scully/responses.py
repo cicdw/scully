@@ -8,6 +8,8 @@ from twython import Twython
 from yahoo_finance import Share
 from .core import HELP_REGISTRY, Post, register
 from .interfaces import GetTickerPrice, Interface
+from .mulder_model import fit_bayes
+from .utils import db_to_dataframe
 
 CACHE_FILE = os.environ.get('SCULLY_EMOJI_CACHE')
 
@@ -192,3 +194,19 @@ class Aliens(Response):
         if 'alien' in text.lower():
             self.react('alien', **msg)
             self.react('telescope', **msg)
+
+
+@register(skip_test=True)
+class XFiles(Response):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.is_it_mulder = fit_bayes(db_to_dataframe())
+
+    def reply(self, msg):
+        text = msg.get('text', '')
+        try:
+            if self.is_it_mulder(text):
+                self.react('xfiles', **msg)
+        except Exception:
+            logging.exception('unable to score phrase "{}"'.format(text))

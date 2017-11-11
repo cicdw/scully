@@ -1,16 +1,20 @@
 import logging
 import re
+import sys
 
 
 HELP_REGISTRY = {}
 REGISTRY = []
-def register(register_help=False):
+def register(register_help=False, skip_test=False):
     def decorator(post):
         if register_help:
             HELP_REGISTRY[post.cmd] = post.cli_doc
 
-        REGISTRY.append(post)
-        return post
+        if skip_test and hasattr(sys, '_within_test'):
+            return post
+        else:
+            REGISTRY.append(post)
+            return post
     return decorator
 
 
