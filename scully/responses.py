@@ -205,5 +205,8 @@ class XFiles(Response):
 
     def reply(self, msg):
         text = msg.get('text', '')
-        if self.is_it_mulder(text):
-            self.react('xfiles', **msg)
+        try:
+            if self.is_it_mulder(text):
+                self.react('xfiles', **msg)
+        except Exception:
+            logging.exception('unable to score phrase "{}"'.format(text))
