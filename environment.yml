@@ -7,7 +7,6 @@ dependencies:
     - matplotlib
     - pandas
     - pip
-    - scikit-learn
     - pip:
         - schedule
         - slackclient
