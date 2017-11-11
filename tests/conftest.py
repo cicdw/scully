@@ -2,6 +2,15 @@ import pytest
 from unittest.mock import MagicMock
 
 
+def pytest_configure(config):
+    import sys
+    sys._within_test = True
+
+def pytest_unconfigure(config):
+    import sys
+    del sys._within_test
+
+
 @pytest.fixture
 def slack():
     '''creates mock slack api with simpler testing API'''

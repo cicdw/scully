@@ -196,7 +196,7 @@ class Aliens(Response):
             self.react('telescope', **msg)
 
 
-@register()
+@register(skip_test=True)
 class XFiles(Response):
 
     def __init__(self, *args, **kwargs):
