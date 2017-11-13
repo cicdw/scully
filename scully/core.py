@@ -32,7 +32,7 @@ class Post(object):
         return re.sub("{.*?}", "", txt.replace('“', '"').replace('”', '"'))
 
     def say(self, words, channel=None, **kwargs):
-        logging.info('{0} saying "{1}" in channel {2}'.format(self.name, words, channel))
+        self.log.info('{0} saying "{1}" in channel {2}'.format(self.name, words, channel))
         posted_msg = self.slack_client.api_call("chat.postMessage",
                                     channel=channel,
                                     text=words,
@@ -40,7 +40,8 @@ class Post(object):
         return posted_msg
 
     def react(self, emoji, channel=None, ts=None, **kwargs):
-        logging.info('{0} reacting with :{1}: in channel {2}'.format(self.name, emoji, channel))
+        txt = kwargs.get('text')
+        self.log.info('{0} reacting to "{1}" with :{2}: in channel {3}'.format(self.name, txt, emoji, channel))
         posted_msg = self.slack_client.api_call("reactions.add",
                                     channel=channel,
                                     name=emoji,
@@ -49,3 +50,4 @@ class Post(object):
 
     def __init__(self, slack_client):
         self.slack_client = slack_client
+        self.log = logging.getLogger(self.name)
