@@ -40,7 +40,8 @@ class Post(object):
         return posted_msg
 
     def react(self, emoji, channel=None, ts=None, **kwargs):
-        self.log.info('{0} reacting with :{1}: in channel {2}'.format(self.name, emoji, channel))
+        txt = kwargs.get('text')
+        self.log.info('{0} reacting to "{1}" with :{2}: in channel {3}'.format(self.name, txt, emoji, channel))
         posted_msg = self.slack_client.api_call("reactions.add",
                                     channel=channel,
                                     name=emoji,

@@ -21,7 +21,6 @@ class Interface(Post):
     def _reply(self, stream):
         if stream:
             for msg in stream:
-                self.log.info('Received {}'.format(msg))
                 self._interface(msg)
 
     def __call__(self, stream):
