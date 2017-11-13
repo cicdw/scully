@@ -41,8 +41,8 @@ class Twitter(Response):
         mentioned = hashtag.search(msg.get('text', ''))
         if mentioned:
             query = mentioned.group().strip()
-            logging.info(mentioned)
-            logging.info(query)
+            self.log.info(mentioned)
+            self.log.info(query)
             tweets = self.twitter.search(q=query, count=15, lang="en")
             try:
                 url = 'http://twitter.com/statuses/' + random.choice(tweets['statuses'])['id_str']
@@ -111,7 +111,7 @@ class DanielVerCheck(Response):
                 self.react('-1', **out)
                 self.react('chart_with_downwards_trend', **out)
         except:
-            logging.exception('{0}: Daniel scheduled stock pull failed for ticker {1}'.format(self.name, self.ticker))
+            self.log.exception('{0}: Daniel scheduled stock pull failed for ticker {1}'.format(self.name, self.ticker))
 
 
 @register(register_help=True)
@@ -129,10 +129,10 @@ class AddReaction(Response, Interface):
         super().__init__(slack_client)
         if fname is not None and os.path.exists(fname):
             self._cache = self.load(fname=fname)
-            logging.info('Loaded emoji reactions cache from {}'.format(fname))
+            self.log.info('Loaded emoji reactions cache from {}'.format(fname))
         else:
             self._cache = {}
-            logging.info('Starting fresh emoji reactions cache.')
+            self.log.info('Starting fresh emoji reactions cache.')
 
         self.fname = fname
 
@@ -147,7 +147,7 @@ class AddReaction(Response, Interface):
                 json.dump(self._cache, f)
 
     def add_reaction(self, listen_for, react_with):
-        logging.info('{0}: Storing reaction {1} for pattern "{2}"'.format(self.name, react_with, listen_for))
+        self.log.info('{0}: Storing reaction {1} for pattern "{2}"'.format(self.name, react_with, listen_for))
         self._cache[listen_for] = react_with
         self.save()
         return listen_for, react_with
@@ -209,4 +209,4 @@ class XFiles(Response):
             if self.is_it_mulder(text):
                 self.react('xfiles', **msg)
         except Exception:
-            logging.exception('unable to score phrase "{}"'.format(text))
+            self.log.exception('unable to score phrase "{}"'.format(text))

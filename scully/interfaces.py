@@ -21,7 +21,7 @@ class Interface(Post):
     def _reply(self, stream):
         if stream:
             for msg in stream:
-                logging.info('Received {}'.format(msg))
+                self.log.info('Received {}'.format(msg))
                 self._interface(msg)
 
     def __call__(self, stream):
@@ -54,7 +54,7 @@ class GetTickerPrice(Interface):
                 emoji = 'chart_with_upwards_trend' if current > prev_close else 'chart_with_downwards_trend'
                 self.react(emoji, **report_msg)
         except:
-            logging.exception('Stock pull failed for ticker {}'.format(ticker))
+            self.log.exception('Stock pull failed for ticker {}'.format(ticker))
 
 
 @register(register_help=True)

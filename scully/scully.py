@@ -29,7 +29,7 @@ class Scully(object):
 
     def logging(self, fname=None):
         logging.basicConfig(filename=fname,
-                            format='%(asctime)s %(levelname)s: %(message)s',
+                            format='%(asctime)s - %(name)s:%(levelname)s: %(message)s',
                             datefmt='%m/%d/%Y %I:%M:%S %p',
                             level=logging.DEBUG)
 
