@@ -27,7 +27,7 @@ def create_scoring_engine(p, q, vocab, prior=0.2):
         clean = [clean_word(wrd) for wrd in phrase.split() if clean_word(wrd) in index_of]
         vec = np.zeros(K)
         for w in clean:
-            vec[[index_of[w]]] += 1
+            vec[[index_of[w]]] = 1
         b = np.log(prior)
         w = np.sum(np.log(p) * vec + np.log(1 - p) * (1 - vec))
         resp = b + w
@@ -48,9 +48,10 @@ def fit_bayes(df):
     neg_total = sum(neg_counts.values())
 
     p, q = np.zeros(K), np.zeros(K)
-    a, b = 1, 9
+    a, b = 1, 2
+    c, d = 2, 1
     for i, w in enumerate(vocab):
         p[i] = (pos_counts[w] + a) / (pos_total + a + b)
-        q[i] = (neg_counts[w] + a) / (neg_total + a + b)
+        q[i] = (neg_counts[w] + c) / (neg_total + c + d)
 
     return create_scoring_engine(p, q, vocab)
