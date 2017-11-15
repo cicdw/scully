@@ -12,6 +12,5 @@ dependencies:
         - slackclient
         - stop-words
         - twython
-        - yahoo-finance
     - pytest
     - python=3.5

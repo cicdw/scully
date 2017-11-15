@@ -5,7 +5,6 @@ import random
 import re
 import schedule
 from twython import Twython
-from yahoo_finance import Share
 from .core import HELP_REGISTRY, Post, register
 from .interfaces import GetTickerPrice, Interface
 from .mulder_model import fit_bayes
@@ -94,7 +93,7 @@ class DanielVerCheck(Response):
 
     def do(self):
         try:
-            current, high, low, prev_close = GetTickerPrice.get_stock_info(self.ticker)
+            current, prev_close = GetTickerPrice.get_stock_info(self.ticker)
             perc_change = (float(current) - self.pinned_at) / self.pinned_at
             if perc_change > 0:
                 msg = random.choice(self.success_msgs)

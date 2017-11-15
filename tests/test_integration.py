@@ -40,8 +40,6 @@ def test_scully_is_a_broker(slack):
     with patch('scully.interfaces.Share') as share:
         share.return_value = symbol
         symbol.get_price.return_value = 10.0
-        symbol.get_days_high.return_value = 512.0
-        symbol.get_days_low.return_value = 0.001
         symbol.get_prev_close.return_value = 9.75
         bot.listen()
         assert bot.slack_client.api_not_called()
