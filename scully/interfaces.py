@@ -37,18 +37,17 @@ class GetTickerPrice(Interface):
     def get_stock_info(ticker):
         stock = Share(ticker)
         current = stock.get_price()
-        high, low = stock.get_days_high(), stock.get_days_low()
         prev_close = stock.get_prev_close()
-        return current, high, low, prev_close
+        return current, prev_close
 
     def interface(self, *tickers, msg=None):
         try:
             for ticker in tickers:
-                current, high, low, prev_close = self.get_stock_info(ticker)
+                current, prev_close = self.get_stock_info(ticker)
                 if current is None:
                     resp = "{0} doesn't appear to be actively traded right now.".format(ticker)
                 else:
-                    resp = "{0} is currently trading at ${1}, compared with today's high of ${2} and a low of ${3}".format(ticker, current, high, low)
+                    resp = "{0} is currently trading at ${1}".format(ticker, current)
                 report_msg = self.say(resp, **msg)
                 emoji = 'chart_with_upwards_trend' if current > prev_close else 'chart_with_downwards_trend'
                 self.react(emoji, **report_msg)
