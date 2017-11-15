@@ -5,7 +5,6 @@ import random
 import re
 import schedule
 from twython import Twython
-from yahoo_finance import Share
 from .core import HELP_REGISTRY, Post, register
 from .interfaces import GetTickerPrice, Interface
 from .mulder_model import fit_bayes

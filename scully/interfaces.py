@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import re
-from yahoo_finance import Share
+from .stocks import Share
 from .core import HELP_REGISTRY, register, Post
 
 
