@@ -1,5 +1,5 @@
+import json
 import requests
-from ast import literal_eval
 
 
 class Share:
@@ -9,7 +9,7 @@ class Share:
         self.url = self.base_url.format(symbol)
         r = requests.get(self.url)
         if r.ok:
-            self.data = literal_eval(r.text)
+            self.data = json.loads(r.text)
         else:
             raise ValueError('Request for URL {} failed.'.format(self.url))
 
