@@ -94,7 +94,7 @@ class DanielVerCheck(Response):
     def do(self):
         try:
             current, prev_close = GetTickerPrice.get_stock_info(self.ticker)
-            perc_change = (float(current) - self.pinned_at) / self.pinned_at
+            perc_change = 100 * (float(current) - self.pinned_at) / self.pinned_at
             if perc_change > 0:
                 msg = random.choice(self.success_msgs)
                 msg += ' :money_mouth_face: :money_with_wings:\n'
