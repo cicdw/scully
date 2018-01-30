@@ -25,13 +25,22 @@ def soupify_url(url):
         raise ValueError("{} could not be retrieved.".format(url))
 
 
+def _parse_clue_answer(clue):
+    hint = clue.find('div')['onmouseover']
+    p = re.compile("<em.*>(.*?)</em>")
+    ans = p.findall(hint)[0]
+    return ans
+
+
 def _parse_clue_id(clue, categories):
     clue_id = clue['id']
     return categories[int(clue_id.split('_')[2]) - 1]
 
 
 def create_game(game_soup):
+    game_data = {}
     rounds = game_soup.find_all('table', {'class' : 'round'})
+    rounds.extend(game_soup.find_all('table', {'class' : 'final_round'}))
     for j_round in rounds:
         categories = [c.text for c in j_round.find_all('td', {'class' : 'category_name'})]
         clues = j_round.find_all('td', {'class': 'clue'})
@@ -39,8 +48,10 @@ def create_game(game_soup):
             clue_info = clue.find('td', {'class': 'clue_text'})
             clue_text = clue_info.text
             clue_cat = _parse_clue_id(clue_info, categories=categories)
+            clue_ans = _parse_clue_answer(clue)
+            game_data[(clue_cat, clue_text)] = clue_ans
 
-    return 'game data'
+    return game_data
 
 
 def create_game_list(season_soup):
@@ -49,6 +60,7 @@ def create_game_list(season_soup):
         if 'showgame' in link['href']:
             game_soup = soupify_url(link['href'])
             games.append((link.contents[0], create_game(game_soup)))
+            from IPython import embed; embed()
     return games
 
 
