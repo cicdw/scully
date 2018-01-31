@@ -27,14 +27,18 @@ def soupify_url(url):
 
 def _parse_clue_answer(clue):
     hint = clue.find('div')['onmouseover']
-    p = re.compile("<em.*>(.*?)</em>")
+    p = re.compile("<em.*\">(.*?)</em>")
     ans = p.findall(hint)[0]
     return ans
 
 
 def _parse_clue_id(clue, categories):
-    clue_id = clue['id']
-    return categories[int(clue_id.split('_')[2]) - 1]
+    if len(categories) == 1:
+    # corresponds to Final Jeopardy
+        return categories[0]
+    else:
+        clue_id = clue['id']
+        return categories[int(clue_id.split('_')[2]) - 1]
 
 
 def create_game(game_soup):
@@ -43,12 +47,15 @@ def create_game(game_soup):
     rounds.extend(game_soup.find_all('table', {'class' : 'final_round'}))
     for j_round in rounds:
         categories = [c.text for c in j_round.find_all('td', {'class' : 'category_name'})]
+        final_round = True if len(categories) == 1 else False
         clues = j_round.find_all('td', {'class': 'clue'})
         for clue in clues:
             clue_info = clue.find('td', {'class': 'clue_text'})
+            if clue_info is None:
+                continue
             clue_text = clue_info.text
             clue_cat = _parse_clue_id(clue_info, categories=categories)
-            clue_ans = _parse_clue_answer(clue)
+            clue_ans = _parse_clue_answer(clue if final_round is False else j_round)
             game_data[(clue_cat, clue_text)] = clue_ans
 
     return game_data
