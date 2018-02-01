@@ -42,7 +42,7 @@ def _parse_clue_id(clue, categories):
 
 
 def create_game(game_soup):
-    game_data = {}
+    game_data = []
     rounds = game_soup.find_all('table', {'class' : 'round'})
     rounds.extend(game_soup.find_all('table', {'class' : 'final_round'}))
     for j_round in rounds:
@@ -56,7 +56,7 @@ def create_game(game_soup):
             clue_text = clue_info.text
             clue_cat = _parse_clue_id(clue_info, categories=categories)
             clue_ans = _parse_clue_answer(clue if final_round is False else j_round)
-            game_data[(clue_cat, clue_text)] = clue_ans
+            game_data.append((clue_cat, clue_text, clue_ans))
 
     return game_data
 
@@ -67,7 +67,6 @@ def create_game_list(season_soup):
         if 'showgame' in link['href']:
             game_soup = soupify_url(link['href'])
             games.append((link.contents[0], create_game(game_soup)))
-            from IPython import embed; embed()
     return games
 
 
@@ -97,13 +96,13 @@ if __name__ == '__main__':
     seasons = create_season_list(main_page, m=max_seasons)
     games = []
 
-    for season, season_link in seasons:
+    for season, season_link in seasons[:max_seasons]:
         print(season)
         season_soup = soupify_url(BASE_URL + season_link)
         games.extend(create_game_list(season_soup))
 
     for game, data in games:
         jeopardy[game] = data
-#
-#    with open(FILENAME, 'w') as f:
-#        json.dump(xfiles, f)
+
+    with open(FILENAME, 'w') as f:
+        json.dump(jeopardy, f)
