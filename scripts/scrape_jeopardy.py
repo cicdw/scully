@@ -26,37 +26,40 @@ def soupify_url(url):
 
 
 def _parse_clue_answer(clue):
-    hint = clue.find('div')['onmouseover']
+    hint = clue['onmouseover']
     p = re.compile("<em.*\">(.*?)</em>")
     ans = p.findall(hint)[0]
     return ans
 
 
 def _parse_clue_id(clue, categories):
-    if len(categories) == 1:
-    # corresponds to Final Jeopardy
-        return categories[0]
+    clue_id = clue['id']
+    which_round = clue_id.split('_')[1]
+    if which_round == 'J':
+        which_cat = clue_id.split('_')[2]
+        cat = categories[int(which_cat) - 1]
+    elif which_round == 'DJ':
+        which_cat = clue_id.split('_')[2]
+        cat = categories[5 + int(which_cat)]
     else:
-        clue_id = clue['id']
-        return categories[int(clue_id.split('_')[2]) - 1]
+        cat = categories[-1]
+    return cat
 
 
 def create_game(game_soup):
     game_data = []
     rounds = game_soup.find_all('table', {'class' : 'round'})
     rounds.extend(game_soup.find_all('table', {'class' : 'final_round'}))
-    for j_round in rounds:
-        categories = [c.text for c in j_round.find_all('td', {'class' : 'category_name'})]
-        final_round = True if len(categories) == 1 else False
-        clues = j_round.find_all('td', {'class': 'clue'})
-        for clue in clues:
-            clue_info = clue.find('td', {'class': 'clue_text'})
-            if clue_info is None:
-                continue
-            clue_text = clue_info.text
-            clue_cat = _parse_clue_id(clue_info, categories=categories)
-            clue_ans = _parse_clue_answer(clue if final_round is False else j_round)
-            game_data.append((clue_cat, clue_text, clue_ans))
+    categories = [c.text for c in game_soup.find_all('td', {'class' : 'category_name'})]
+    clues = [div for div in game_soup.find_all('div') if 'onmouseover' in div.attrs]
+    for clue in clues:
+        clue_info = clue.find_next('td', {'class': 'clue_text'})
+        if clue_info is None:
+            continue
+        clue_text = clue_info.text
+        clue_cat = _parse_clue_id(clue_info, categories=categories)
+        clue_ans = _parse_clue_answer(clue)
+        game_data.append((clue_cat, clue_text, clue_ans))
 
     return game_data
 
