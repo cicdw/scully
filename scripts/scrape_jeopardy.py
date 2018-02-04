@@ -33,6 +33,7 @@ def _parse_clue_answer(clue):
 
 
 def _parse_clue_id(clue, categories):
+    is_not_single_round = len(categories) > 7
     clue_id = clue['id']
     which_round = clue_id.split('_')[1]
     if which_round == 'J':
@@ -40,7 +41,7 @@ def _parse_clue_id(clue, categories):
         cat = categories[int(which_cat) - 1]
     elif which_round == 'DJ':
         which_cat = clue_id.split('_')[2]
-        cat = categories[5 + int(which_cat)]
+        cat = categories[6 * is_not_single_round + int(which_cat) - 1]
     else:
         cat = categories[-1]
     return cat
