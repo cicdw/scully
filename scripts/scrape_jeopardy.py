@@ -70,7 +70,8 @@ def create_game_list(season_soup):
     for link in season_soup.find_all('a'):
         if 'showgame' in link['href']:
             game_soup = soupify_url(link['href'])
-            games.append((link.contents[0], create_game(game_soup)))
+            game_name = str(link.contents[0]).replace('\xa0', ' ')
+            games.append((game_name, create_game(game_soup)))
     return games
 
 
