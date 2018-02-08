@@ -73,7 +73,6 @@ class AtMentions(Response):
             self.say('I WANT TO BELIEVE', **msg)
 
 
-@register()
 class DanielVerCheck(Response):
 
     ticker = 'VER'
