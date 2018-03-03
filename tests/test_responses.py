@@ -1,7 +1,8 @@
+from twython import TwythonError
 from unittest.mock import MagicMock, patch
 
 import scully
-from scully.responses import AddReaction, AtMentions, DanielVerCheck, Response
+from scully.responses import AddReaction, AtMentions, DanielVerCheck, Response, Twitter
 
 
 def test_response_objects_reply_when_called():
@@ -135,3 +136,11 @@ def test_daniel_ticker_posts_positive(slack):
         assert broker.slack_client.api_called_with('chat.postMessage')
         assert broker.slack_client.api_called_with('reactions.add',
                                             name='chart_with_upwards_trend')
+
+
+def test_add_twitter_doesnt_die_upon_lost_connection(slack):
+    twitter = MagicMock()
+    hashtag_reactor = Twitter(slack, twitter_client=twitter)
+    hashtag_reactor.twitter.search.side_effect = TwythonError('connection reset')
+    msg = {'text': 'you got a #dadbod', 'channel': 'cat'}
+    hashtag_reactor([msg])

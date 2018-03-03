@@ -30,9 +30,9 @@ class Response(Post):
 @register()
 class Twitter(Response):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, twitter_client=Twython, **kwargs):
         super().__init__(*args, **kwargs)
-        self.twitter = Twython(os.environ.get('SCULLY_API_KEY'),
+        self.twitter = twitter_client(os.environ.get('SCULLY_API_KEY'),
                                os.environ.get('SCULLY_API_SECRET'))
 
     def reply(self, msg):
