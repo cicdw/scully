@@ -146,6 +146,15 @@ def test_twitter_doesnt_die_upon_lost_connection(slack):
     hashtag_reactor([msg])
 
 
+def test_twitter_knows_when_its_time_to_move_on(slack):
+    twitter = MagicMock()
+    hashtag_reactor = Twitter(slack, twitter_client=twitter)
+    msg = {'text': 'you got a #dadbod', 'channel': 'cat'}
+    hashtag_reactor([msg])
+    assert hashtag_reactor.twitter.search.call_count == 1
+    assert hashtag_reactor.slack_client.api_called_with('chat.postMessage')
+
+
 def test_twitter_resets_upon_lost_connection(slack):
     twitter = MagicMock()
     hashtag_reactor = Twitter(slack, twitter_client=twitter)
