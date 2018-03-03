@@ -138,9 +138,18 @@ def test_daniel_ticker_posts_positive(slack):
                                             name='chart_with_upwards_trend')
 
 
-def test_add_twitter_doesnt_die_upon_lost_connection(slack):
+def test_twitter_doesnt_die_upon_lost_connection(slack):
     twitter = MagicMock()
     hashtag_reactor = Twitter(slack, twitter_client=twitter)
     hashtag_reactor.twitter.search.side_effect = TwythonError('connection reset')
     msg = {'text': 'you got a #dadbod', 'channel': 'cat'}
     hashtag_reactor([msg])
+
+
+def test_twitter_resets_upon_lost_connection(slack):
+    twitter = MagicMock()
+    hashtag_reactor = Twitter(slack, twitter_client=twitter)
+    hashtag_reactor.twitter.search.side_effect = TwythonError('connection reset')
+    msg = {'text': 'you got a #dadbod', 'channel': 'cat'}
+    hashtag_reactor([msg])
+    assert hashtag_reactor.twitter.search.call_count == 3
