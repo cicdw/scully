@@ -4,7 +4,8 @@ import os
 import random
 import re
 import schedule
-from twython import Twython
+from time import sleep
+from twython import Twython, TwythonError
 from .core import HELP_REGISTRY, Post, register
 from .interfaces import GetTickerPrice, Interface
 from .mulder_model import fit_bayes
@@ -30,9 +31,9 @@ class Response(Post):
 @register()
 class Twitter(Response):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, twitter_client=Twython, **kwargs):
         super().__init__(*args, **kwargs)
-        self.twitter = Twython(os.environ.get('SCULLY_API_KEY'),
+        self.twitter = twitter_client(os.environ.get('SCULLY_API_KEY'),
                                os.environ.get('SCULLY_API_SECRET'))
 
     def reply(self, msg):
@@ -42,12 +43,18 @@ class Twitter(Response):
             query = mentioned.group().strip()
             self.log.info(mentioned)
             self.log.info(query)
-            tweets = self.twitter.search(q=query, count=15, lang="en")
+            count = 0
+            while count < 3:
+                try:
+                    tweets = self.twitter.search(q=query, count=15, lang="en")
+                except TwythonError:
+                    count += 1
+                    sleep(0.5)
             try:
                 url = 'http://twitter.com/statuses/' + random.choice(tweets['statuses'])['id_str']
                 self.say(url, **msg)
             except:
-                pass
+                self.say('Ugh sorry Twitter is being annoying for me right now.', **msg)
 
 
 @register()
