@@ -54,7 +54,7 @@ class Twitter(Response):
                 url = 'http://twitter.com/statuses/' + random.choice(tweets['statuses'])['id_str']
                 self.say(url, **msg)
             except:
-                pass
+                self.say('Ugh sorry Twitter is being annoying for me right now.', **msg)
 
 
 @register()

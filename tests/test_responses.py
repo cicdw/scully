@@ -153,3 +153,4 @@ def test_twitter_resets_upon_lost_connection(slack):
     msg = {'text': 'you got a #dadbod', 'channel': 'cat'}
     hashtag_reactor([msg])
     assert hashtag_reactor.twitter.search.call_count == 3
+    assert hashtag_reactor.slack_client.api_called_with('chat.postMessage')
