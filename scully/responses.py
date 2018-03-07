@@ -46,7 +46,7 @@ class Twitter(Response):
             count = 0
             while count < 3:
                 try:
-                    tweets = self.twitter.search(q=query, count=15, lang="en")
+                    tweets = self.twitter.search(q=query, count=10, lang="en", result_type='popular')
                     break
                 except TwythonError:
                     count += 1
