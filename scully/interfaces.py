@@ -122,7 +122,8 @@ class HackerTracker(Interface):
         info = self.get_last_ssh_attempt()
         location = self.db_reader.city(info['ip'])
         city, country = location.city.name, location.country.name
-        hack_report = '''Time: {time}\nUsername attempted: {user}\nLocation of IP: {city}, {country}'''.format(time=info['time'],
+        hack_report = 'hacker tracker: info about last ssh attempt\n' + '='*30
+        hack_report += '''Time: {time}\nUsername attempted: {user}\nLocation of IP: {city}, {country}'''.format(time=info['time'],
                                                                                                                user=info['user'],
                                                                                                                city=city,
                                                                                                                country=country)
