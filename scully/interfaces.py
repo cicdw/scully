@@ -87,13 +87,16 @@ class Speak(Interface):
         self.say(' '.join(phrase), channel=self.channel)
 
 
+DB_FILE = os.path.join(os.path.dirname(__file__), '../data/IPDB/DB.mmdb')
+
+
 @register(register_help=True, skip_test=True)
 class HackerTracker(Interface):
 
     cmd = 'hack'
     cli_doc = '$ hack reports geolocation information about the last ssh attempt into scully\'s home!'
 
-    def __init__(self, *args, db_path='', **kwargs):
+    def __init__(self, *args, db_path=DB_FILE, **kwargs):
         # https://dev.maxmind.com/geoip/geoip2/geolite2/
         super().__init__(*args, **kwargs)
         try:
