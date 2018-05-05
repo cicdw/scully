@@ -108,7 +108,7 @@ class HackerTracker(Interface):
     @staticmethod
     def get_last_ssh_attempt(n=50):
         bash_cmd = 'journalctl _COMM=sshd -n {}'.format(n)
-        process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
+        process = subprocess.Popen(bash_cmd.split(), stdout=subprocess.PIPE)
         output, error = process.communicate()
         pattern = re.compile('.* Invalid user .* from .*')
         user_patt = re.compile('user (.*?) from')
