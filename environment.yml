@@ -8,6 +8,7 @@ dependencies:
     - pandas
     - pip
     - pip:
+        - geoip2
         - schedule
         - slackclient
         - stop-words
