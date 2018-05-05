@@ -1,7 +1,9 @@
+import geoip2.database as geo_db
 import json
 import logging
 import os
 import re
+import subprocess
 from .stocks import Share
 from .core import HELP_REGISTRY, register, Post
 
@@ -83,3 +85,43 @@ class Speak(Interface):
 
     def interface(self, *phrase, msg=None):
         self.say(' '.join(phrase), channel=self.channel)
+
+
+@register(register_help=True, skip_test=True)
+class HackerTracker(Interface):
+
+    cmd = 'hack'
+    cli_doc = '$ hack reports geolocation information about the last ssh attempt into scully\'s home!'
+
+    def __init__(self, *args, db_path='', **kwargs):
+        # https://dev.maxmind.com/geoip/geoip2/geolite2/
+        super().__init__(*args, **kwargs)
+        try:
+            self.db_reader = geo_db.Reader(db_path)
+            self.log.info('Reading GeoDB {}'.format(db_path))
+        except:
+            self.log.exception('Could not read from {}!'.format(db_path))
+
+    @staticmethod
+    def get_last_ssh_attempt(n=50):
+        bash_cmd = 'journalctl _COMM=sshd -n {}'.format(n)
+        process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
+        output, error = process.communicate()
+        pattern = re.compile('.* Invalid user .* from .*')
+        user_patt = re.compile('user (.*?) from')
+        ip_patt = re.compile('from (.*?)$')
+        hacks = pattern.findall(output.decode())
+        last_hack = hacks[-1]
+        time, user, ip = last_hack[:15], user_patt.findall(last_hack)[0], ip_patt.findall(last_hack)[0]
+        return dict(time=time + ' EST', user=user, ip=ip)
+
+    def interface(self, *tickers, msg=None):
+        info = self.get_last_ssh_attempt()
+        location = self.db_reader.city(info['ip'])
+        city, country = location.city.name, location.country.name
+        hack_report = '''Time: {time}\nUsername attempted: {user}\nLocation of IP: {city}, {country}'''.format(time=info['time'],
+                                                                                                               user=info['user'],
+                                                                                                               city=city,
+                                                                                                               country=country)
+        self.say(hack_report, **msg)
+
