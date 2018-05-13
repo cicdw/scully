@@ -50,7 +50,7 @@ class Twitter(Response):
             count = 0
             while count < 3:
                 try:
-                    tweets = self.twitter.search(q=query, count=10, lang="en", result_type='popular')
+                    tweets = self.twitter.search(q=query, count=15, lang="en", result_type='mixed')
                     break
                 except TwythonError:
                     count += 1
@@ -59,6 +59,7 @@ class Twitter(Response):
                 url = 'http://twitter.com/statuses/' + random.choice(tweets['statuses'])['id_str']
                 self.say(url, **msg)
             except:
+                self.log.exception('these tweets messed me up: {}'.format(tweets))
                 self.say('Ugh sorry Twitter is being annoying for me right now.', **msg)
 
 
