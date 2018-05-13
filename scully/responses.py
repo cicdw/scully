@@ -249,7 +249,8 @@ class ISpy(Response):
         return 'I spy the following things: ' + ', '.join([n for n in nouns if n != ''])
 
     def reply(self, msg):
-        url = msg.get('file', {}).get('url_private')
+        attached_url = msg.get('message', {}).get('attachments', [{}])[0].get('image_url')
+        url = msg.get('file', {}).get('url_private') or attached_url
         if url is not None:
             with open(self.save_loc, 'wb') as img_file:
                 self.download_image(url, img_file)
