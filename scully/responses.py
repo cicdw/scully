@@ -230,6 +230,7 @@ class ISpy(Response):
     save_loc = join(dirname(__file__), '../tmp_img.jpg')
 
     def classify_image(self, fpath):
+        # using https://raw.githubusercontent.com/tensorflow/models/master/tutorials/image/imagenet/classify_image.py
         script_path = join(dirname(__file__), '../classify_image.py')
         bash_cmd = 'python {0} --image_file={1}'.format(script_path, fpath)
         process = subprocess.Popen(bash_cmd.split(), stdout=subprocess.PIPE)
