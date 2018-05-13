@@ -3,7 +3,11 @@ import logging
 import os
 import random
 import re
+import requests
 import schedule
+import subprocess
+import tempfile
+from os.path import dirname, join
 from time import sleep
 from twython import Twython, TwythonError
 from .core import HELP_REGISTRY, Post, register
@@ -46,7 +50,7 @@ class Twitter(Response):
             count = 0
             while count < 3:
                 try:
-                    tweets = self.twitter.search(q=query, count=10, lang="en", result_type='popular')
+                    tweets = self.twitter.search(q=query, count=15, lang="en", result_type='mixed')
                     break
                 except TwythonError:
                     count += 1
@@ -216,3 +220,41 @@ class XFiles(Response):
                 self.react('xfiles', **msg)
         except Exception:
             self.log.exception('unable to score phrase "{}"'.format(text))
+
+
+@register()
+class ISpy(Response):
+
+    token = os.environ.get('SCULLY_TOKEN')
+    save_loc = join(dirname(__file__), '../tmp_img.jpg')
+
+    def classify_image(self, fpath):
+        # using https://raw.githubusercontent.com/tensorflow/models/master/tutorials/image/imagenet/classify_image.py
+        script_path = join(dirname(__file__), '../classify_image.py')
+        bash_cmd = 'python {0} --image_file={1}'.format(script_path, fpath)
+        process = subprocess.Popen(bash_cmd.split(), stdout=subprocess.PIPE)
+        output, error = process.communicate()
+        return output
+
+    def download_image(self, url, file_obj):
+        header = {'Authorization': 'Bearer {}'.format(self.token)}
+        jpg = requests.get(url, headers=header, stream=True)
+        if jpg.ok:
+            for chunk in jpg.iter_content(1024):
+                file_obj.write(chunk)
+        else:
+            self.log.exception('unable to download image at {}'.format(url))
+
+    def format_msg(self, ideas):
+        nouns = [n.strip() for i in ideas.decode().split('\n') for n in i.split('(')[0].split(',')]
+        return 'I spy the following things: ' + ', '.join([n for n in nouns if n != ''])
+
+    def reply(self, msg):
+        attached_url = msg.get('message', {}).get('attachments', [{}])[0].get('image_url')
+        url = msg.get('file', {}).get('url_private') or attached_url
+        if url is not None:
+            with open(self.save_loc, 'wb') as img_file:
+                self.download_image(url, img_file)
+            ideas = self.classify_image(img_file.name)
+            to_say = self.format_msg(ideas)
+            self.say(to_say, **msg)
