@@ -223,10 +223,10 @@ class XFiles(Response):
 
 
 @register()
-class Images(Response):
+class ISpy(Response):
 
     token = os.environ.get('SCULLY_TOKEN')
-    save_loc = join(dirname(__file__), '../online_test.jpg')
+    save_loc = join(dirname(__file__), '../tmp_img.jpg')
 
     def classify_image(self, fpath):
         script_path = join(dirname(__file__), '../classify_image.py')
@@ -256,4 +256,3 @@ class Images(Response):
             ideas = self.classify_image(img_file.name)
             to_say = self.format_msg(ideas)
             self.say(to_say, **msg)
-
