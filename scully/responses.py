@@ -61,19 +61,33 @@ class Twitter(Response):
             except:
                 self.say('Ugh sorry Twitter is being annoying for me right now.', **msg)
 
-
 @register()
 class Monday(Response):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        schedule.every().monday.at("9:00").do(self.do)
+        schedule.every().monday.at("11:00").do(self.do)
 
     def reply(self, *args):
         pass
 
     def do(self):
-        self.say("Monday, amiright?? :coffeeparrot:", channel='C5AE0R325')
+        self.say("Morning, everyone. What did y'all get done this weekend? :coffee:", channel='C5AE0R325')
+
+
+@register()
+class Tuesday(Response):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        schedule.every().Tuesday.at("10:00").do(self.do)
+
+    def reply(self, *args):
+        pass
+
+    def do(self):
+        self.say("What are we working on this week?", channel='C5AE0R325')
+
 
 
 @register()
