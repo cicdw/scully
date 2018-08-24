@@ -80,7 +80,7 @@ class Tuesday(Response):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        schedule.every().Tuesday.at("10:00").do(self.do)
+        schedule.every().tuesday.at("10:00").do(self.do)
 
     def reply(self, *args):
         pass
